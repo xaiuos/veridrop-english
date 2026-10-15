@@ -30,7 +30,7 @@ TOOL_DEF = {
 
 class FunctionCallingDetector(ActiveDetector):
     name = "function_calling"
-    display_name = "函数调用"
+    display_name = "Function Calling"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -68,8 +68,8 @@ class FunctionCallingDetector(ActiveDetector):
                     "finish_reason": finish_reason(resp),
                     "message_text": message_text(resp)[:300],
                     "evaluation_zh": (
-                        "函数调用没有真正生效: 请求强制了 tool_choice,"
-                        "但响应里没有 tool_calls 数组。中转站可能没透传 OpenAI tool 字段。"
+        "Function calling did not actually take effect: the request forced tool_choice, "
+        "but the response contains no tool_calls array. The relay may not be forwarding OpenAI tool fields."
                     ),
                 },
             )
@@ -120,9 +120,9 @@ class FunctionCallingDetector(ActiveDetector):
                 "sub_checks": sub,
                 "finish_reason": finish_reason(resp),
                 "evaluation_zh": (
-                    "函数调用正常: 返回的 tool_calls 字段、call_ ID、function name 和 arguments JSON 都符合 OpenAI 规范。"
+        "Function calling OK: the returned tool_calls fields, call_ IDs, function names, and arguments JSON all conform to the OpenAI spec."
                     if score >= 70.0
-                    else "函数调用部分通过: 中转站返回了 tool_calls,但其中某些子字段不符合 OpenAI 规范。"
+        else "Function calling partially passed: the relay returned tool_calls, but some sub-fields do not conform to the OpenAI spec."
                 ),
             },
         )

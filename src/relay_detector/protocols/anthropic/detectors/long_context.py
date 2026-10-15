@@ -148,7 +148,7 @@ def _skip_tier(
 
 class LongContextDetector(ActiveDetector):
     name = "long_context"
-    display_name = "长上下文真实性"
+    display_name = "Long-Context Authenticity"
     weight = 15.0  # heavy — context-window fraud is among the worst lies
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -160,7 +160,7 @@ class LongContextDetector(ActiveDetector):
         opt_in_extreme = bool(cfg and cfg.include_long_context_extreme)
         if not (opt_in_standard or opt_in_extreme):
             return self.skip(
-                "长上下文检测为可选项,需在请求时勾选(标准档 $0.05–$0.50 / 极限档 $0.05–$8)"
+        "Long-context detection is optional and must be enabled at request time (standard tier $0.05–$0.50 / extreme tier $0.05–$8)"
             )
 
         seed = f"{client.base_url}:{model}:{int(time.time())}"
@@ -188,7 +188,7 @@ class LongContextDetector(ActiveDetector):
                     "needles_found": 0,
                     "status": "skip",
                     "skip_reason": (
-                        f"模型 {model} 上限为 {ctx_limit} tokens,跳过此档"
+            f"Model {model} has a limit of {ctx_limit} tokens; skipping this tier"
                     ),
                     "estimated_cost_usd": 0.0,
                     "input_tokens_reported": None,
@@ -477,7 +477,7 @@ def _aggregate(tier_results: list[dict]) -> tuple[float, str, str]:
     See protocols/openai/detectors/long_context.py:_aggregate for the full
     rationale."""
     if not tier_results:
-        return 0.0, "error", "未跑任何 tier"
+        return 0.0, "error", "no tier was run"
 
     inconclusive = {"skip", "rate_limited"}
     probed = [t for t in tier_results if t["status"] not in inconclusive]
@@ -488,14 +488,14 @@ def _aggregate(tier_results: list[dict]) -> tuple[float, str, str]:
         if rate_limited:
             t = rate_limited[0]
             return 0.0, "skip", (
-                f"{t['target_tokens'] // 1000}k tokens probe 触发上游 "
-                "rate limit (TPM/RPM),非中转站缺陷 —— 请稍后重试或换更高 tier 的 key"
+            f"{t['target_tokens'] // 1000}k tokens probe hit an upstream "
+            "rate limit (TPM/RPM) — not a relay defect; retry later or use a higher-tier key"
             )
         if skipped:
             reason = skipped[0].get("skip_reason")
             if isinstance(reason, str) and reason:
                 return 0.0, "skip", reason
-        return 0.0, "skip", "模型自身 context 上限低于检测最低档 (32k),跳过"
+        return 0.0, "skip", "the model's own context limit is below the lowest detection tier (32k); skipped"
 
     per_tier_pct = []
     for t in probed:
@@ -524,9 +524,9 @@ def _aggregate(tier_results: list[dict]) -> tuple[float, str, str]:
         bad = next(t for t in probed if t["status"] == "fail")
         status = "fail"
         summary = (
-            f"{bad['target_tokens'] // 1000}k tokens 处召回失败 "
+            f"recall failed at {bad['target_tokens'] // 1000}k tokens "
             f"({bad['needles_found']}/{bad['needles_total']} needles) "
-            "—— 中转站很可能在此规模截断或路由到小窗口模型"
+            "— the relay very likely truncates at this scale or routes to a small-window model"
         )
     else:
         highest = probed[-1]["target_tokens"] // 1000
@@ -535,9 +535,9 @@ def _aggregate(tier_results: list[dict]) -> tuple[float, str, str]:
         if has_partial:
             partial = next(t for t in probed if t["status"] == "partial")
             suffix_parts.append(
-                f"{partial['target_tokens'] // 1000}k 档召回 "
+                f"{partial['target_tokens'] // 1000}k tier recall "
                 f"{partial['needles_found']}/{partial['needles_total']}"
-                "(模型在长上下文中段位置的自然召回缺失,非截断)"
+                "(natural recall gaps in mid-context positions, not truncation)"
             )
         if skip_count > 0:
             skipped_for_count = any(
@@ -546,18 +546,18 @@ def _aggregate(tier_results: list[dict]) -> tuple[float, str, str]:
                 for t in skipped
             )
             if skipped_for_count:
-                suffix_parts.append("更高档因 count_tokens/构造尺寸诊断未测")
+                suffix_parts.append("higher tiers not tested due to count_tokens / constructed-size diagnostics")
             else:
-                suffix_parts.append("更高档因模型自身上限未测")
+                suffix_parts.append("higher tiers not tested due to the model's own limit")
         if rate_limited:
             rl = rate_limited[0]
             suffix_parts.append(
-                f"{rl['target_tokens'] // 1000}k 档触发上游 TPM 限制(非截断,未计分)"
+                f"{rl['target_tokens'] // 1000}k tier hit an upstream TPM limit (not truncation; not scored)"
             )
         if suffix_parts:
-            summary = f"完整通过 {highest}k tokens 长上下文检测;" + ";".join(suffix_parts)
+            summary = f"Fully passed the {highest}k tokens long-context detection;" + ";".join(suffix_parts)
         else:
-            summary = f"完整通过 {highest}k tokens 长上下文检测,未发现截断证据"
+            summary = f"Fully passed the {highest}k tokens long-context detection; no evidence of truncation"
 
     return score, status, summary
 

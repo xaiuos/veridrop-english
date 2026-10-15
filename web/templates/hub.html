@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}AI API 中转站真假检测 - 验证 Claude / GPT / Gemini 是不是真的 | Veridrop{% endblock %}
-{% block description %}Veridrop 是免费的 AI API 中转站检测工具:1 分钟告诉你买的 Claude / GPT / Gemini 是真透传还是被偷换。Claude 用服务端加密签名(中转站无法伪造)做验证,OpenAI / Gemini 测协议合规。无需注册、API key 不留存、代码开源。{% endblock %}
-{% block og_title %}AI API 中转站真假检测 · 1 分钟看穿 Claude / GPT / Gemini 是不是真的{% endblock %}
-{% block og_description %}免费检测中转站是真透传还是偷换便宜模型。Claude 加密签名 + 多协议覆盖 + 报告永久可分享。{% endblock %}
+{% block title %}AI API Relay Authenticity Detection - Verify whether Claude / GPT / Gemini is real | Veridrop{% endblock %}
+{% block description %}Veridrop is a free AI API relay detection tool: in 1 minute it tells you whether the Claude / GPT / Gemini you bought is a genuine pass-through or secretly swapped. Claude is verified via a server-side cryptographic signature (unforgeable by relays); OpenAI / Gemini are checked for protocol conformance. No signup, no API key retention, open source.{% endblock %}
+{% block og_title %}AI API Relay Authenticity Detection · See through Claude / GPT / Gemini in 1 minute{% endblock %}
+{% block og_description %}Free detection of whether a relay is a genuine pass-through or swaps in cheaper models. Claude cryptographic signature + multi-protocol coverage + permanently shareable reports.{% endblock %}
 
 {% block head_extra %}
 <script type="application/ld+json">
@@ -11,7 +11,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Veridrop",
-  "alternateName": ["Veridrop 中转站检测", "AI API 中转站检测工具", "Claude relay verifier"],
+  "alternateName": ["Veridrop relay detection", "AI API relay detector", "Claude relay verifier"],
   "applicationCategory": "DeveloperApplication",
   "applicationSubCategory": "API Verification Tool",
   "operatingSystem": "Web Browser",
@@ -24,17 +24,17 @@
     "availability": "https://schema.org/InStock"
   },
   "featureList": [
-    "Claude thinking signature 加密级真伪验证",
-    "OpenAI Chat Completions 8 项协议检测",
-    "Gemini OpenAI 兼容协议 7 项检测",
-    "三协议自动跳转(选错协议一键切换)",
-    "提交前死模型预探测",
-    "报告永久可分享(HTML + JPG)",
-    "API key 不持久化",
-    "代码完全开源,可自托管"
+    "Cryptographic Claude thinking-signature authenticity verification",
+    "OpenAI Chat Completions 8-check protocol detection",
+    "Gemini OpenAI-compatible protocol 7-check detection",
+    "Automatic cross-protocol handoff (one-click switch when the wrong protocol is chosen)",
+    "Dead-model preflight before submission",
+    "Permanently shareable reports (HTML + JPG)",
+    "API keys never persisted",
+    "Fully open source, self-hostable"
   ],
   "creator": {"@type": "Organization", "name": "Veridrop", "url": "https://veridrop.org"},
-  "description": "Veridrop 通过 Claude thinking signature 等 10 项检测维度,验证 AI API 中转站是否真实透传 Claude 模型,识别用 Kiro / Amazon Q / 其他后端伪装的中转站。同时覆盖 OpenAI / Gemini 协议级检测。"
+  "description": "Veridrop verifies, via the Claude thinking signature and 10 detection dimensions, whether an AI API relay genuinely passes through Claude models, and identifies relays disguised with Kiro / Amazon Q / other backends. OpenAI / Gemini protocol-level detection is also covered."
 }
 </script>
 <script type="application/ld+json">
@@ -44,42 +44,42 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "AI API 中转站是什么?",
+      "name": "What is an AI API relay?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "中转站(relay,又叫「镜像」「代理」)是第三方搭建的 API 转发服务,把你的请求转给 OpenAI / Anthropic / Google 官方,再把响应原样返回给你。常见出现原因:国内无法直连官方域名、便宜的批发价、统一一个接口调多家模型。"
+        "text": "A relay (also called a mirror or proxy) is a third-party API forwarding service that routes your requests to OpenAI / Anthropic / Google and returns the responses to you. Common reasons they exist: regions where the official domains are unreachable directly, cheaper wholesale pricing, and one unified interface for multiple vendors' models."
       }
     },
     {
       "@type": "Question",
-      "name": "怎么知道我用的是真 Claude / GPT / Gemini 还是假的?",
+      "name": "How do I know whether my Claude / GPT / Gemini is real or fake?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "三个方向:① 协议字段(id 前缀、object、finish_reason 是否符合官方规范);② 能力指纹(Claude 思维签名是否服务端真签名、PDF 是否能识别、function calling 形状);③ 用量字段(usage 里有没有混入异源痕迹)。Veridrop 把这三类合成 7-10 项自动检测,1 分钟出结果。"
+        "text": "Three directions: ① Protocol fields (do id prefixes, object, finish_reason conform to the official spec); ② capability fingerprints (is the Claude thinking signature a genuine server-side signature, does PDF recognition work, what shape do function calls take); ③ usage fields (are foreign-origin traces mixed into usage). Veridrop combines these into 7-10 automatic checks with results in 1 minute."
       }
     },
     {
       "@type": "Question",
-      "name": "Veridrop 会偷我的 API key 吗?",
+      "name": "Will Veridrop steal my API key?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "不会。API key 只存在 job 内存对象里,job 跑完(成功或失败)立即清空,不写报告 JSON、不写日志、不写磁盘。报告里 key 是脱敏形式(sk-y7xU••••••0h)。代码完全开源可验证,也可以自己 clone 部署。"
+        "text": "No. The API key lives only in the in-memory job object and is cleared as soon as the job finishes (success or failure) — never written to report JSON, logs, or disk. Reports show a masked key (sk-y7xU••••••0h). The code is fully open source and verifiable, and you can clone and self-host it."
       }
     },
     {
       "@type": "Question",
-      "name": "检测要花钱吗?",
+      "name": "Does the detection cost money?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Veridrop 自己免费。但检测会发真实 API 请求,产生上游 token 消耗:Haiku 约 $0.012,Sonnet 约 $0.05,Opus 约 $0.20,GPT-4o-mini 约 $0.005。这部分是中转站收的钱,不经 Veridrop。"
+        "text": "Veridrop itself is free. But the detection sends real API requests, incurring upstream token costs: roughly $0.012 with Haiku, $0.05 with Sonnet, $0.20 with Opus, and $0.005 with GPT-4o-mini. That portion is billed by the relay, not by Veridrop."
       }
     },
     {
       "@type": "Question",
-      "name": "中转站常见的「作假」手段有哪些?",
+      "name": "What tricks do relays commonly use to fake things?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "5 种常见:① 用 Kiro / Amazon Q / Bedrock 跑 Claude 替身;② 用 Claude 后端跑 GPT 请求;③ 把 GPT-4o 偷换成 GPT-4o-mini 省成本;④ 剥离 thinking、PDF 多模态等高级能力;⑤ 注入额外 system prompt 改写身份回答。Veridrop 对这 5 种都有针对性检测。"
+        "text": "Five common ones: ① Running Claude stand-ins on Kiro / Amazon Q / Bedrock; ② running GPT requests on a Claude backend; ③ secretly swapping GPT-4o for GPT-4o-mini to save cost; ④ stripping advanced capabilities like thinking and PDF multimodality; ⑤ injecting extra system prompts to rewrite identity answers. Veridrop has targeted detection for all five."
       }
     }
   ]
@@ -89,58 +89,60 @@
 
 {% block content %}
 <section class="hub-hero">
-  <h1>AI API 中转站真假检测</h1>
+  <h1>AI API Relay Authenticity Detection</h1>
   <p class="answer-capsule">
-    <strong>Veridrop</strong> 是免费的 AI API 中转站检测工具:用 Claude 服务端加密签名(中转站无法伪造)+ 多维行为指纹,
-    <strong>1 分钟</strong>告诉你买的 Claude / GPT / Gemini 是真透传,
-    还是被中转站偷偷换成了别的便宜模型。无需注册、API key 不留存、代码开源。
+    <strong>Veridrop</strong> is a free AI API relay detection tool: using the Claude server-side cryptographic
+    signature (unforgeable by relays) plus multi-dimensional behavioral fingerprints, it tells you in
+    <strong>1 minute</strong> whether the Claude / GPT / Gemini you bought is a genuine pass-through
+    or has been secretly swapped for a cheaper model. No signup, no API key retention, open source.
   </p>
   <p class="hub-meta">
-    已检测 <strong>3 个</strong>协议 · <strong>12 项</strong>独立维度 · <strong>30-75 秒</strong>出报告 · 报告 URL 永久可分享
+    <strong>3</strong> protocols supported · <strong>12</strong> independent dimensions · reports in <strong>30-75 seconds</strong> · permanently shareable report URLs
   </p>
 </section>
 
 <!-- ============================== Trust Strip ============================== -->
-<section class="trust-strip" aria-label="开源与信任">
+<section class="trust-strip" aria-label="Open source and trust">
   <div class="trust-strip-head">
-    <h2>🔓 100% 开源 · 评分算法可逐行审计</h2>
+    <h2>🔓 100% open source · scoring algorithm auditable line by line</h2>
     <p>
-      Veridrop 的本质是「<strong>把 API key 交给我们检测中转站</strong>」 — 这件事的基础是<strong>信任</strong>。
-      所以我们把所有评分逻辑、key 处理代码全部公开,任何人可以审计。这是闭源工具永远做不到的承诺。
+      Veridrop is, at its core, about <strong>handing your API key to us to test a relay</strong> — and that rests on <strong>trust</strong>.
+      So all scoring logic and key-handling code is public and auditable by anyone. That is a promise no closed-source tool can ever make.
     </p>
   </div>
 
   <div class="trust-cards">
     <article class="trust-card">
       <div class="trust-icon">📜</div>
-      <h3>评分算法公开</h3>
+      <h3>Open scoring algorithm</h3>
       <p>
-        12 项 detector 怎么打分、贝叶斯排名公式、tokenizer 校准 — 全在 GitHub,无黑盒。
+        How the 12 detectors score, the Bayesian ranking formula, tokenizer calibration — all on GitHub, no black boxes.
       </p>
       <a href="https://github.com/canarybyte/veridrop/tree/main/src/relay_detector"
-        target="_blank" rel="noopener" class="trust-link">查看检测器源码 →</a>
+        target="_blank" rel="noopener" class="trust-link">View detector source →</a>
     </article>
 
     <article class="trust-card">
       <div class="trust-icon">🔐</div>
-      <h3>API key 不落盘<br><em>可代码证明</em></h3>
+      <h3>API keys never touch disk<br><em>provable from code</em></h3>
       <p>
-        SECURITY.md 列出每条 key 处理承诺,每条都标了代码位置 — 你可以
-        <code>grep</code> 验证。不是"我们说不偷",是"代码不让偷"。
+        SECURITY.md lists every key-handling promise, each tagged with its code
+        location — you can verify them with <code>grep</code>. It's not "we say
+        we don't steal keys"; it's "the code makes stealing impossible".
       </p>
       <a href="https://github.com/canarybyte/veridrop/blob/main/SECURITY.md"
-        target="_blank" rel="noopener" class="trust-link">查看安全策略 →</a>
+        target="_blank" rel="noopener" class="trust-link">View the security policy →</a>
     </article>
 
     <article class="trust-card">
       <div class="trust-icon">⚙️</div>
-      <h3>支持完全自托管</h3>
+      <h3>Fully self-hostable</h3>
       <p>
-        不放心 SaaS?<code>git clone</code> 到自己机器跑,API key 永远不离开你的网络。
-        AGPL-3.0 许可证保证 fork 出去的修改也必须开源。
+        Not comfortable with SaaS? <code>git clone</code> and run it on your own machine — your API key never leaves your network.
+        The AGPL-3.0 license guarantees that forked modifications must also be open source.
       </p>
       <a href="https://github.com/canarybyte/veridrop#readme"
-        target="_blank" rel="noopener" class="trust-link">自托管指南 →</a>
+        target="_blank" rel="noopener" class="trust-link">Self-hosting guide →</a>
     </article>
   </div>
 
@@ -150,7 +152,7 @@
       <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
       </svg>
-      <span>在 GitHub 查看源码 · canarybyte/veridrop</span>
+      <span>View source on GitHub · canarybyte/veridrop</span>
     </a>
     <span class="trust-license-pill">License · AGPL-3.0</span>
   </div>
@@ -160,110 +162,111 @@
   <article class="protocol-card protocol-card-primary">
     <div class="protocol-top">
       <span class="protocol-kicker">Claude</span>
-      <span class="tier-badge tier-crypto">加密级验证</span>
+      <span class="tier-badge tier-crypto">Cryptographic verification</span>
     </div>
-    <h2>Claude API 中转站检测</h2>
+    <h2>Claude API Relay Detection</h2>
     <p>
-      12 项检测,核心是 thinking signature 加密签名 — 这是 Anthropic 服务端真实加密产物
-      (500-2000 字符),中转站理论上无法伪造;Token 用量检查会额外识别 usage 虚报风险。
+      12 checks, with the cryptographic thinking signature at the core — a genuine Anthropic server-side
+      cryptographic artifact (500-2000 characters) that relays theoretically cannot forge; the token usage
+      check additionally flags usage over-reporting risks.
     </p>
-    <a class="btn btn-primary protocol-action" href="/claude">检测 Claude 中转站 →</a>
+    <a class="btn btn-primary protocol-action" href="/claude">Detect a Claude relay →</a>
   </article>
 
   <article class="protocol-card">
     <div class="protocol-top">
       <span class="protocol-kicker">OpenAI</span>
-      <span class="tier-badge tier-behavioral">行为/协议级</span>
+      <span class="tier-badge tier-behavioral">Behavioral/protocol-level</span>
     </div>
-    <h2>OpenAI 中转站检测</h2>
+    <h2>OpenAI Relay Detection</h2>
     <p>
-      8 项检测覆盖 Chat Completions 协议合规、function calling、structured output、
-      流式一致性。能识别中转站把 GPT 请求偷偷转给 Claude / Gemini 后端的「换芯」行为。
+      8 checks covering Chat Completions protocol conformance, function calling, structured output,
+      and streaming consistency. Catches the "chip swap" where a relay secretly routes GPT requests to a Claude / Gemini backend.
     </p>
-    <a class="btn btn-ghost protocol-action" href="/openai">检测 OpenAI 中转站 →</a>
+    <a class="btn btn-ghost protocol-action" href="/openai">Detect an OpenAI relay →</a>
   </article>
 
   <article class="protocol-card">
     <div class="protocol-top">
       <span class="protocol-kicker">Gemini</span>
-      <span class="tier-badge tier-protocol">协议级</span>
+      <span class="tier-badge tier-protocol">Protocol-level</span>
     </div>
-    <h2>Gemini 中转站检测</h2>
+    <h2>Gemini Relay Detection</h2>
     <p>
-      7 项检测覆盖 Gemini OpenAI 兼容协议、function calling、structured output、流式一致性
-      和 usage 字段。适配 Gemini 3 thinking-by-default 模型的特殊处理。
+      7 checks covering the Gemini OpenAI-compatible protocol, function calling, structured output,
+      streaming consistency, and the usage field. Special handling adapts to Gemini 3 thinking-by-default models.
     </p>
-    <a class="btn btn-ghost protocol-action" href="/gemini">检测 Gemini 中转站 →</a>
+    <a class="btn btn-ghost protocol-action" href="/gemini">Detect a Gemini relay →</a>
   </article>
 </section>
 
 <section class="why-veridrop">
-  <h2>为什么选 Veridrop</h2>
+  <h2>Why Veridrop</h2>
   <div class="why-grid">
     <div class="why-item">
       <div class="why-num">01</div>
-      <h3>加密级真伪验证(独家)</h3>
-      <p>业内只有 Veridrop 利用了 Claude 的 thinking signature — Anthropic 服务端加密签名,长 500-2000 字符,中转站理论上无法伪造。一测就知道是不是真 Claude。</p>
+      <h3>Cryptographic authenticity verification (exclusive)</h3>
+      <p>Veridrop is the only tool in the industry that uses the Claude thinking signature — an Anthropic server-side cryptographic signature, 500-2000 characters long, that relays theoretically cannot forge. One test tells you whether it is real Claude.</p>
     </div>
     <div class="why-item">
       <div class="why-num">02</div>
-      <h3>三协议一站测,选错自动跳转</h3>
-      <p>Claude / OpenAI / Gemini 都覆盖。你在 Claude 页填了一个 GPT key?Veridrop 一秒识别,一键跳到 OpenAI 页继续 — 不用重新粘贴。</p>
+      <h3>All three protocols in one place, with automatic handoff</h3>
+      <p>Claude / OpenAI / Gemini are all covered. Entered a GPT key on the Claude page? Veridrop recognizes it in a second and hands you off to the OpenAI page with one click — no re-pasting needed.</p>
     </div>
     <div class="why-item">
       <div class="why-num">03</div>
-      <h3>提交前 0.5 秒预体检</h3>
-      <p>中转站宣称「支持 50 个模型」但其中一半实际下架?Veridrop 提交前 0.5 秒先帮你试一下,直接告诉你哪些可用 — 免得你白等半分钟拿到全 0 分报告。</p>
+      <h3>0.5-second preflight before submission</h3>
+      <p>A relay claims to "support 50 models" but half are actually delisted? Veridrop pre-tests in 0.5 seconds before submission and tells you directly which ones work — so you don't waste half a minute waiting for an all-zero report.</p>
     </div>
     <div class="why-item">
       <div class="why-num">04</div>
-      <h3>报告永久可分享(HTML + JPG)</h3>
-      <p>每份检测自动生成 <code>/r/{id}</code> 永久链接和 JPG 卡片,可以直接发微信群、朋友圈、知乎、V2EX。让朋友避坑只需一张图。</p>
+      <h3>Permanently shareable reports (HTML + JPG)</h3>
+      <p>Every detection automatically generates a permanent <code>/r/{id}</code> link and a JPG card you can post straight to chat groups, forums, and communities. One image is all a friend needs to avoid a bad relay.</p>
     </div>
     <div class="why-item">
       <div class="why-num">05</div>
-      <h3>完全开源 · 不存「偷 key」可能</h3>
-      <p>API key 只在内存里跑完即丢,不写日志、不写磁盘。代码全开源,你可以审计服务端,或者直接 clone 部署到自己机器上 — 比闭源「黑盒检测」工具透明得多。</p>
+      <h3>Fully open source · no possibility of key theft</h3>
+      <p>API keys run in memory only and are discarded when the job ends — never written to logs or disk. With all code open source, you can audit the server or clone and deploy it on your own machine — far more transparent than closed-source "black-box" detection tools.</p>
     </div>
     <div class="why-item">
       <div class="why-num">06</div>
-      <h3>字段级证据 · 看见中转站具体动了哪里</h3>
-      <p>Veridrop 不只给一个「75 分」总分 — 每项扣分都附具体证据:usage 字段缺了哪些键、stream 漏了哪个事件、tool_use ID 是不是规范前缀、签名长度异常多少。一眼看出中转站在哪个环节动了手脚,不是黑盒一个数字。</p>
+      <h3>Field-level evidence · see exactly what the relay altered</h3>
+      <p>Veridrop doesn't just give a "75" total — every deduction comes with concrete evidence: which keys are missing from the usage field, which streaming event was dropped, whether tool_use IDs follow the convention, how far the signature length deviates. You see at a glance where the relay tampered, not just a black-box number.</p>
     </div>
   </div>
 </section>
 
 <section class="how-it-works">
-  <h2>怎么用?三步 60 秒</h2>
+  <h2>How to use it? Three steps, 60 seconds</h2>
   <ol class="how-steps">
     <li>
       <span class="how-num">1</span>
       <div>
-        <h3>填中转站地址 + API key</h3>
-        <p>选要测的协议页(<a href="/claude">Claude</a> / <a href="/openai">OpenAI</a> / <a href="/gemini">Gemini</a>),粘贴 base_url 和 key,模型下拉自动列出该 key 在该中转站可用的模型。</p>
+        <h3>Enter the relay address + API key</h3>
+        <p>Pick the protocol page to test (<a href="/claude">Claude</a> / <a href="/openai">OpenAI</a> / <a href="/gemini">Gemini</a>), paste your base_url and key, and the model dropdown auto-lists the models your key can use on that relay.</p>
       </div>
     </li>
     <li>
       <span class="how-num">2</span>
       <div>
-        <h3>点「开始检测」,等 30-70 秒</h3>
-        <p>Veridrop 并发跑 7-10 项检测,实时显示进度。期间消耗的 token 由你的 key 支付(Haiku 约 $0.012,GPT-4o-mini 约 $0.005)。</p>
+        <h3>Click "Start Detection" and wait 30-70 seconds</h3>
+        <p>Veridrop runs 7-10 checks concurrently with live progress. Tokens consumed are billed to your key (~$0.012 with Haiku, ~$0.005 with GPT-4o-mini).</p>
       </div>
     </li>
     <li>
       <span class="how-num">3</span>
       <div>
-        <h3>看报告,重点看红黄项</h3>
-        <p>总分 ≥85 优秀(绿) / 70-84 通过(浅绿) / 50-69 存在风险(黄) / <50 未达标(红)。Claude 重点看 thinking signature 是否 100 分;OpenAI 看 usage 字段有没有 Claude / Gemini 残留。</p>
+        <h3>Read the report, focusing on red and amber items</h3>
+        <p>Total ≥85 excellent (green) / 70-84 passed (light green) / 50-69 at risk (amber) / <50 failed (red). For Claude, focus on whether thinking signature scores 100; for OpenAI, check whether the usage field carries Claude / Gemini residue.</p>
       </div>
     </li>
   </ol>
 </section>
 
 <section class="hub-note">
-  <h2>不同协议的 100 分含义不同</h2>
+  <h2>A score of 100 means different things per protocol</h2>
   <p>
-    Claude 的 100 分包含<strong>加密级</strong> thinking signature 验证(Anthropic 服务端签名,中转站不可伪造);OpenAI / Gemini 因为没有同等级的服务端签名机制,验证强度只到<strong>行为级 / 协议级</strong>。每份报告页顶部都会明确标注本次检测属于哪一级,避免把协议兼容性误读成加密级真伪证明。完整说明见 <a href="/faq">常见问题</a>。
+    Claude's 100 includes <strong>cryptographic</strong> thinking-signature verification (an Anthropic server-side signature, unforgeable by relays); since OpenAI / Gemini lack an equivalent server-side signature mechanism, their verification strength only reaches the <strong>behavioral / protocol level</strong>. Every report page clearly labels which tier the detection belongs to at the top, preventing protocol compatibility from being misread as cryptographic proof of authenticity. Full explanation in the <a href="/faq">FAQ</a>.
   </p>
 </section>
 {% endblock %}

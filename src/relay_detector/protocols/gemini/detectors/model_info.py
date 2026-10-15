@@ -18,7 +18,7 @@ from .utils import int_value
 
 class ModelInfoDetector(ActiveDetector):
     name = "model_info"
-    display_name = "模型响应形状"
+    display_name = "Model Response Shape"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:

@@ -78,16 +78,18 @@ def baseline_path(model_id: str, mode: Mode) -> Path | None:
 
 def verdict_caption(score: float) -> str:
     if score >= 85:
-        return "优秀"
+        return "Excellent"
     if score >= 70:
-        return "通过"
+        return "Passed"
     if score >= 50:
-        return "基本合格"
-    return "未达标"
+        return "Marginally OK"
+    return "Failed"
 
 
 def tier_banner() -> tuple[str, str]:
     return (
-        "加密级验证",
-        "Claude thinking signature 来自 Anthropic 服务端签名。通过该项时,它是当前检测集中最高可信度的真伪信号。",
+        "Cryptographic verification",
+        "The Claude thinking signature comes from an Anthropic server-side "
+        "signature. When this check passes, it is the highest-confidence "
+        "authenticity signal in the current detection suite.",
     )

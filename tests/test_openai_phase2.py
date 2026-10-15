@@ -263,8 +263,8 @@ def test_openai_detectors_use_core_base_classes():
 
 def test_openai_tier_banner_disclaims_authenticity():
     title, message = tier_banner()
-    assert title == "行为/协议级验证"
-    assert "无法可靠区分" in message
+    assert title == "Behavioral/Protocol-level verification"
+    assert "cannot reliably distinguish" in message
 
 
 def test_openai_default_model_choices_are_gpt5_series():

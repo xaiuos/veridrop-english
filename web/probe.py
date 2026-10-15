@@ -92,11 +92,11 @@ async def probe_relay(base_url: str, api_key: str) -> dict[str, Any]:
         async with httpx.AsyncClient(timeout=PROBE_TIMEOUT_S) as client:
             resp, payload = await _get_models_with_fallback(client, urls, headers)
     except (httpx.TimeoutException, httpx.NetworkError) as e:
-        out = _err(f"网络/超时: {type(e).__name__}", base_url, status=None)
+        out = _err(f"Network/timeout: {type(e).__name__}", base_url, status=None)
         _CACHE[key] = (now, out)
         return out
     except Exception as e:  # noqa: BLE001
-        out = _err(f"请求失败: {type(e).__name__}: {e}", base_url, status=None)
+        out = _err(f"Request failed: {type(e).__name__}: {e}", base_url, status=None)
         _CACHE[key] = (now, out)
         return out
 
@@ -115,14 +115,14 @@ async def probe_relay(base_url: str, api_key: str) -> dict[str, Any]:
             "best_by_protocol": {p: None for p in PROTOCOLS},
             "status": status,
             "error": None,
-            "note": "该中转站不暴露 /v1/models,无法预先列模型",
+            "note": "This relay does not expose /v1/models, so models cannot be listed in advance",
         }
         _CACHE[key] = (now, out)
         return out
 
     if status in (401, 403):
         out = _err(
-            f"鉴权失败 (HTTP {status}): {_excerpt(resp.text)}",
+            f"Authentication failed (HTTP {status}): {_excerpt(resp.text)}",
             base_url,
             status=status,
             auth_ok=False,
@@ -140,7 +140,7 @@ async def probe_relay(base_url: str, api_key: str) -> dict[str, Any]:
         return out
 
     if payload is None:
-        out = _err("响应不是有效 JSON", base_url, status=status)
+        out = _err("Response is not valid JSON", base_url, status=status)
         _CACHE[key] = (now, out)
         return out
 
@@ -426,7 +426,7 @@ async def probe_model_alive(
                     messages=[{"role": "user", "content": "ok"}],
                 )
         else:
-            return False, f"未知协议: {protocol}"
+            return False, f"Unknown protocol: {protocol}"
         return True, None
     except Exception as e:  # noqa: BLE001
         # The protocol clients raise their own *APIError types with a `body`

@@ -1,10 +1,13 @@
-"""中转站红黑榜:聚合所有公开检测报告,按域名分组排序。
+"""Relay leaderboard: aggregates all public detection reports, grouped and
+ranked by domain.
 
-每份 /r/{job_id} 报告都是公开可分享的;leaderboard 只是把它们按 base_url 的
-域名聚合起来,展示每个中转站被多少人测过、平均分多少、最近一次什么 verdict。
+Every /r/{job_id} report is public and shareable; the leaderboard simply
+aggregates them by the domain of each base_url, showing how many times each
+relay has been tested, its average score, and its most recent verdict.
 
-SEO 价值:用户搜「XX 中转站怎么样」时,leaderboard 页面包含该域名 + 评分
-摘要,可以直接命中长尾搜索。详细报告通过链接跳到具体的 /r/{job_id}。
+SEO value: when users search "is relay X any good", the leaderboard page
+contains that domain + a score summary, directly matching long-tail queries.
+Detailed reports are linked from the specific /r/{job_id} pages.
 """
 
 from __future__ import annotations
@@ -28,7 +31,7 @@ REPORT_DIRS = [
 ]
 
 PROTOCOL_LABELS = {"anthropic": "Claude", "openai": "OpenAI", "gemini": "Gemini"}
-VERDICT_LABELS = {"passed": "通过", "marginal": "存在风险", "failed": "未达标"}
+VERDICT_LABELS = {"passed": "Passed", "marginal": "At Risk", "failed": "Failed"}
 
 # A domain with only 1 detection is statistically meaningless for ranking.
 # Still surface it in the list (good for SEO long-tail), but mark it as
@@ -37,7 +40,7 @@ _MIN_RANKED_SAMPLES = 2
 
 # Bayesian ranking parameters. The prior pulls few-sample relays toward
 # a neutral 50 so a fluky 1-test "100/100" can't outrank a consistently
-# 99/100 relay tested 100 times. See "排名指标" discussion 2026-05-05.
+# 99/100 relay tested 100 times. See the "ranking metric" discussion 2026-05-05.
 _RANKING_PRIOR_VALUE = 50.0
 _RANKING_PRIOR_WEIGHT = 5.0
 

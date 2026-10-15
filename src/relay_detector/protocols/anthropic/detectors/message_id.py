@@ -25,7 +25,7 @@ NESTED_VIOLATION_PENALTY = 25.0
 
 class MessageIDDetector(PassiveDetector):
     name = "message_id"
-    display_name = "消息标识规范"
+    display_name = "Message ID Conformance"
     weight = 5.0
 
     def __init__(self) -> None:

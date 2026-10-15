@@ -24,7 +24,7 @@ PROMPT = "Reply with exactly: veridrop stream check"
 
 class IntegrityDetector(ActiveDetector):
     name = "integrity"
-    display_name = "流式一致性"
+    display_name = "Streaming Consistency"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -109,9 +109,9 @@ class IntegrityDetector(ActiveDetector):
                 "usage_match": usage_match,
                 "stream_chunk_count": stream["chunk_count"],
                 "evaluation_zh": (
-                    "流式与非流式响应基本一致: 文本、结束原因和 usage 三者吻合。"
+        "Streaming and non-streaming responses are largely consistent: text, finish reason, and usage all agree."
                     if score >= 70.0
-                    else "stream 与 non-stream 在文本、结束原因或 usage 字段上不对齐,中转站可能在两条路径上做了不同处理。"
+        else "stream and non-stream are not aligned on text, finish reason, or usage fields; the relay may handle the two paths differently."
                 ),
             }
         )

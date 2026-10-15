@@ -283,7 +283,7 @@ async def test_probe_401_signals_auth_failure(monkeypatch):
 
     assert out["ok"] is False
     assert out["auth_ok"] is False
-    assert "鉴权" in out["error"]
+    assert "Authentication" in out["error"]
 
 
 @pytest.mark.asyncio

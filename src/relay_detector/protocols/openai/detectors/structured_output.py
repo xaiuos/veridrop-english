@@ -11,7 +11,7 @@ from .base import ActiveDetector
 
 class StructuredOutputDetector(ActiveDetector):
     name = "structured_output"
-    display_name = "结构化输出"
+    display_name = "Structured Output"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -68,14 +68,14 @@ class StructuredOutputDetector(ActiveDetector):
             score += 10
         markdown_json_seen = _looks_like_markdown_json(text)
         evaluation_zh = (
-            "结构化输出正常: 返回内容是纯 JSON,且字段符合 schema。"
+        "Structured output OK: the returned content is pure JSON and the fields conform to the schema."
             if ok_schema
             else (
-                "请求已发送 response_format=json_schema strict=true,但返回的是普通 Markdown 文本,"
-                " 说明中转站可能没有透传或没有实现 OpenAI 结构化输出参数。"
+        "The request sent response_format=json_schema strict=true, but a plain Markdown text was "
+        "returned — the relay may not be forwarding or may not implement OpenAI structured output parameters."
                 if markdown_json_seen
                 else (
-                    "请求已发送 response_format=json_schema strict=true,但返回内容不能按 JSON schema 解析。"
+        "The request sent response_format=json_schema strict=true, but the returned content cannot be parsed against the JSON schema."
                 )
             )
         )

@@ -37,7 +37,7 @@ def test_cmp_thinking_signature_block_missing_is_critical():
     })
     c = _compare_one("thinking_signature", b, r)
     assert c.severity == Severity.CRITICAL
-    assert any("thinking 块" in f for f in c.findings)
+    assert any("thinking block" in f for f in c.findings)
 
 
 def test_cmp_thinking_signature_short_signature_is_major():
@@ -348,7 +348,7 @@ def test_compare_overall_summary_aggregates_severities():
     assert by_name["pdf"].severity == Severity.CRITICAL
     assert by_name["message_id"].severity == Severity.MAJOR
     # Summary should mention severities
-    assert "严重" in cmp.summary or "critical" in cmp.summary.lower()
+    assert "critical" in cmp.summary.lower()
 
 
 def test_compare_aligned_reports_overall_ok():
@@ -390,4 +390,4 @@ def test_compare_model_mismatch_in_summary():
         "results": [],
     }
     cmp = compare(baseline, relay)
-    assert "模型不一致" in cmp.summary
+    assert "models do not match" in cmp.summary

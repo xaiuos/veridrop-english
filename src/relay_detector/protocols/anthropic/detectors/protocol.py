@@ -31,7 +31,7 @@ ISSUE_PENALTY = 10.0
 
 class ProtocolDetector(PassiveDetector):
     name = "protocol"
-    display_name = "协议规范性"
+    display_name = "Protocol Conformance"
     weight = 5.0
 
     def __init__(self) -> None:

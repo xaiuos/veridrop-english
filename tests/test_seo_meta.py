@@ -1,4 +1,4 @@
-"""Tests for /r/{job_id} SEO meta — title diversity drives long-tail SEO,
+"""Tests for /r/{job_id} SEO meta; title diversity drives long-tail SEO,
 so model name must appear in the page title, not just domain + verdict.
 Without per-model variation, two reports on the same relay collide on the
 same title text and Google deduplicates them out of the index.
@@ -37,19 +37,19 @@ def test_seo_title_includes_target_model():
     assert "OpenAI" in title
     assert "gpt-5.5" in title, f"model missing from title: {title!r}"
     assert "91/100" in title
-    assert "存在风险" in title
+    assert "At Risk" in title
 
 
 def test_seo_title_falls_back_when_target_model_missing():
     """Legacy reports / probe failures may not have target_model. Title
-    must still render coherently — must NOT print empty 'OpenAI 中转站  检测:'."""
+    must still render coherently; must NOT print empty 'OpenAI Relay  Detection:'."""
     meta = _seo_meta_for_report(_base_report(target_model=""))
     title = meta["seo_title"]
 
     # No leading/trailing extra space, no "  " (double space) artifact
     assert "  " not in title, f"double-space artifact in fallback title: {title!r}"
     assert "www.fucheers.top" in title
-    assert "OpenAI 中转站检测" in title
+    assert "OpenAI Relay Detection" in title
     assert "91/100" in title
 
 
@@ -68,7 +68,7 @@ def test_seo_title_distinct_per_model_same_relay():
 
 
 def test_seo_title_respects_155_char_cap():
-    """The 155-char cap is a hard SEO ceiling — long model snapshot IDs
+    """The 155-char cap is a hard SEO ceiling; long model snapshot IDs
     must not push the title over."""
     meta = _seo_meta_for_report(_base_report(target_model="gpt-5.5-2026-04-23"))
     assert len(meta["seo_title"]) <= 155
@@ -76,7 +76,7 @@ def test_seo_title_respects_155_char_cap():
 
 
 def test_seo_description_still_mentions_model():
-    """The description block already mentioned model before this change —
+    """The description block already mentioned model before this change;
     guarding it here so a future title refactor doesn't accidentally drop
     it from the meta description."""
     meta = _seo_meta_for_report(_base_report(target_model="gpt-5.5"))

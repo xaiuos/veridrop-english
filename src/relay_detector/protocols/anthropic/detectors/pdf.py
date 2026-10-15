@@ -5,7 +5,7 @@ block and asks Claude to extract a unique magic string baked into the PDF.
 
 A relay station that forwards documents correctly will return the magic; one
 that strips multimodal, downgrades to text-only routing, or returns an error
-will fail. This is "anti-阉割" coverage: per Anthropic docs every active
+    will fail. This is anti-castration (anti-stripping) coverage: per Anthropic docs every active
 Claude model supports PDF, so passing the request through must produce the
 magic regardless of which Claude variant is on the other end.
 """
@@ -39,7 +39,7 @@ def _load_pdf_b64() -> str:
 
 class PDFDetector(ActiveDetector):
     name = "pdf"
-    display_name = "PDF文档识别"
+    display_name = "PDF Document Recognition"
     weight = 8.0
 
     async def run(self, client, model: str) -> DetectorResult:

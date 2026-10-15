@@ -50,7 +50,7 @@ SUB_CHECK_WEIGHT = 20.0  # 5 checks × 20 = 100
 
 class IntegrityDetector(ActiveDetector):
     name = "integrity"
-    display_name = "响应完整性"
+    display_name = "Response Integrity"
     weight = 5.0
     modes = {Mode.STANDARD, Mode.FULL}
 

@@ -61,12 +61,12 @@ def effective_verdict(score: float, results: Iterable[DetectorResult]) -> Verdic
 
 def summary_text(score: float, verdict: Verdict) -> str:
     if verdict == "passed" and score >= 85.0:
-        return "优秀"
+        return "Excellent"
     if verdict == "passed":
-        return "通过"
+        return "Passed"
     if verdict == "marginal":
-        return "基本合格"
-    return "未达标"
+        return "Marginally OK"
+    return "Failed"
 
 
 def compute_total(results: Iterable[DetectorResult]) -> float:
@@ -100,7 +100,6 @@ _FATAL_MODEL_UNAVAILABLE_PATTERNS = (
     "model_not_available",
     "model not available",
     "no available channel",
-    "无可用渠道",
 )
 
 
@@ -121,13 +120,15 @@ def fatal_run_error(results: Iterable[DetectorResult]) -> str | None:
         return None
     if any(pattern in text for pattern in _FATAL_UPSTREAM_PATTERNS):
         return (
-            "检测无效: 上游返回余额不足或用量限制错误。请更换有额度的 API key,"
-            " 或降低检测模式/模型后重新检测。"
+            "Detection invalid: the upstream returned an insufficient-balance "
+            "or usage-limit error. Please switch to an API key with quota, or "
+            "lower the detection mode/model and re-run."
         )
     if any(pattern in text for pattern in _FATAL_MODEL_UNAVAILABLE_PATTERNS):
         return (
-            "检测无效: 中转站没有当前模型的可用渠道,或该模型名称不被此中转站支持。"
-            " 请更换该站已开通的模型后重新检测。"
+            "Detection invalid: the relay has no available channel for the "
+            "current model, or the model name is not supported by this relay. "
+            "Please switch to a model this relay offers and re-run."
         )
     return None
 

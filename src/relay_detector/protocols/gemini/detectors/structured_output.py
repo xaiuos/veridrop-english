@@ -15,7 +15,7 @@ _NONCE = "gemini-detector"
 
 class StructuredOutputDetector(ActiveDetector):
     name = "structured_output"
-    display_name = "结构化输出"
+    display_name = "Structured Output"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -80,15 +80,15 @@ class StructuredOutputDetector(ActiveDetector):
             score += 10.0
 
         if ok_schema:
-            evaluation_zh = "结构化输出正常: 返回内容是纯 JSON 且符合 schema。"
+            evaluation_zh = "Structured output OK: the returned content is pure JSON and conforms to the schema."
         elif markdown_seen:
             evaluation_zh = (
-                "请求已发送 response_format=json_schema strict=true,"
-                "但返回的是 Markdown 代码块。中转站可能没有透传或没有实现 OpenAI 结构化输出参数。"
+                "The request sent response_format=json_schema strict=true, "
+                "but a Markdown code block was returned. The relay may not be forwarding or may not implement OpenAI structured output parameters."
             )
         else:
             evaluation_zh = (
-                "请求已要求 JSON schema strict 输出,但返回内容无法按 schema 解析。"
+                "The request asked for JSON schema strict output, but the returned content cannot be parsed against the schema."
             )
 
         return self._result(

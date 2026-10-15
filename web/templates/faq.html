@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}常见问题 · AI API 中转站检测 | Veridrop{% endblock %}
-{% block description %}Veridrop 关于 AI API 中转站检测的 {{ total_count }} 个常见问题:Claude 真伪验证、OpenAI 后端伪装识别、Gemini 中转站协议合规、thinking signature 加密级检测原理。{% endblock %}
-{% block og_title %}AI API 中转站检测常见问题 · Veridrop{% endblock %}
-{% block og_description %}{{ total_count }} 个 Q&A 覆盖 Claude / OpenAI / Gemini 中转站真伪检测、协议合规、隐私安全。{% endblock %}
+{% block title %}FAQ · AI API Relay Detection | Veridrop{% endblock %}
+{% block description %}{{ total_count }} frequently asked questions about AI API relay detection with Veridrop: Claude authenticity verification, OpenAI backend disguise detection, Gemini relay protocol conformance, and the cryptographic thinking-signature detection principle.{% endblock %}
+{% block og_title %}AI API Relay Detection FAQ · Veridrop{% endblock %}
+{% block og_description %}{{ total_count }} Q&As covering Claude / OpenAI / Gemini relay authenticity detection, protocol conformance, and privacy.{% endblock %}
 {% block canonical %}https://veridrop.org/faq{% endblock %}
 {% block og_url %}https://veridrop.org/faq{% endblock %}
 
@@ -16,18 +16,19 @@
 {% block content %}
 
 <section class="faq-hero">
-  <h1>常见问题</h1>
+  <h1>FAQ</h1>
   <p class="faq-hero-sub">
-    Veridrop 是 AI API 中转站检测工具,通过 Claude thinking signature 加密级验证 + 协议字段
-    + 用量指纹,识别中转站是否真实透传 Claude / OpenAI / Gemini 模型。本页汇总 <strong>{{ total_count }} 个</strong>
-    关于中转站、真伪检测、工具使用、数据安全的常见问题。
+    Veridrop is an AI API relay detection tool that uses Claude cryptographic thinking-signature
+    verification + protocol fields + usage fingerprints to determine whether a relay genuinely passes
+    through Claude / OpenAI / Gemini models. This page collects <strong>{{ total_count }}</strong>
+    frequently asked questions about relays, authenticity detection, using the tool, and data safety.
   </p>
 </section>
 
 <div class="faq-layout">
   <!-- Sticky TOC on desktop; collapses to a header card on mobile -->
   <aside class="faq-toc">
-    <div class="faq-toc-title">目录</div>
+    <div class="faq-toc-title">Contents</div>
     <ul class="faq-toc-list">
       {% for cat in categories %}
       <li><a href="#{{ cat.id }}">{{ cat.title }}</a> <span class="faq-toc-count">{{ cat.entries|length }}</span></li>
@@ -46,7 +47,7 @@
         <details class="faq-entry" id="{{ cat.id }}-{{ entry.id }}">
           <summary class="faq-q">
             {{ entry.q }}
-            <a class="faq-permalink" href="#{{ cat.id }}-{{ entry.id }}" aria-label="复制链接到该问题">#</a>
+            <a class="faq-permalink" href="#{{ cat.id }}-{{ entry.id }}" aria-label="Copy link to this question">#</a>
           </summary>
           {# entry.a may contain limited inline HTML (<strong>, <code> etc.)
              from faq_data.py — that file is fully under our control, no user
@@ -59,12 +60,13 @@
     {% endfor %}
 
     <section class="faq-no-answer">
-      <h2>没找到答案?</h2>
+      <h2>Didn't find your answer?</h2>
       <p>
-        欢迎在
+        Feel free to open an issue on
         <a href="https://github.com/canarybyte/veridrop" target="_blank" rel="noopener">GitHub</a>
-        提 issue,或者直接<a href="/claude">跑一次检测</a>看实际结果 — Veridrop
-        的报告 details 里包含具体的扣分原因,通常自带答案。
+        , or just <a href="/claude">run a detection</a> and see the actual result — Veridrop's
+        report details include the specific reasons for every deduction, which usually answers the
+        question itself.
       </p>
     </section>
   </main>

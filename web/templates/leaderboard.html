@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}AI API 中转站红黑榜 · 真实检测数据排行 | Veridrop{% endblock %}
-{% block description %}基于 {{ summary.total_reports }} 份社区公开检测数据,按贝叶斯加权排名 {{ summary.total_relays }} 家 AI API 中转站。Top 10 主榜显示长期稳定测试的高分中转站,识破假冒 Claude / GPT / Gemini 中转站。{% endblock %}
-{% block og_title %}AI API 中转站红黑榜 · {{ summary.total_relays }} 家中转站真实评分{% endblock %}
-{% block og_description %}{{ summary.total_reports }} 份社区检测数据自动聚合,按贝叶斯加权排行。免费查阅,数据真实。{% endblock %}
+{% block title %}AI API Relay Leaderboard · Real Detection Data Rankings | Veridrop{% endblock %}
+{% block description %}{{ summary.total_relays }} AI API relays ranked by Bayesian-weighted scoring based on {{ summary.total_reports }} community-published detection reports. The Top 10 main board shows high-scoring relays with long-term stable testing, exposing fake Claude / GPT / Gemini relays.{% endblock %}
+{% block og_title %}AI API Relay Leaderboard · Real scores for {{ summary.total_relays }} relays{% endblock %}
+{% block og_description %}{{ summary.total_reports }} community detection reports auto-aggregated and ranked by Bayesian weighting. Free to browse, real data.{% endblock %}
 {% block canonical %}https://veridrop.org/leaderboard{% if page > 1 %}?page={{ page }}{% endif %}{% endblock %}
 {% block og_url %}https://veridrop.org/leaderboard{% if page > 1 %}?page={{ page }}{% endif %}{% endblock %}
 
@@ -12,11 +12,11 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "AI API 中转站红黑榜 · {{ summary.total_relays }} 家中转站真实检测排行",
-  "description": "基于 {{ summary.total_reports }} 份公开检测报告聚合的 AI API 中转站质量排行榜",
+  "headline": "AI API Relay Leaderboard · Real detection rankings for {{ summary.total_relays }} relays",
+  "description": "Quality rankings of AI API relays aggregated from {{ summary.total_reports }} public detection reports",
   "url": "https://veridrop.org/leaderboard",
   "publisher": {"@type": "Organization", "name": "Veridrop", "url": "https://veridrop.org"},
-  "inLanguage": "zh-CN",
+  "inLanguage": "en",
   "isAccessibleForFree": true
 }
 </script>
@@ -24,7 +24,7 @@
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  "name": "AI API 中转站质量排行 · 主榜 Top 10",
+  "name": "AI API Relay Quality Rankings · Main Board Top 10",
   "numberOfItems": {{ top_relays|length }},
   "itemListOrder": "https://schema.org/ItemListOrderDescending",
   "itemListElement": [
@@ -51,27 +51,27 @@
   </div>
   <div class="lb-main">
     <h2 class="lb-domain">
-      <a href="/leaderboard/{{ r.domain }}" title="查看 {{ r.domain }} 全部检测历史">{{ r.domain }}</a>
+      <a href="/leaderboard/{{ r.domain }}" title="View {{ r.domain }}'s full detection history">{{ r.domain }}</a>
     </h2>
     <p class="lb-meta">
-      <strong>{{ r.total_count }}</strong> 次检测 ·
+      <strong>{{ r.total_count }}</strong> detections ·
       <strong>{{ r.protocols_label }}</strong>
       {% if r.last_checked %}
-        · 最近 {{ r.last_checked.strftime('%Y-%m-%d') }}
+        · last {{ r.last_checked.strftime('%Y-%m-%d') }}
       {% endif %}
       {% if not r.is_ranked %}
-        · <span class="lb-badge-info">单次样本,仅供参考</span>
+        · <span class="lb-badge-info">single sample, reference only</span>
       {% endif %}
-      · <a class="lb-detail-link" href="/leaderboard/{{ r.domain }}">查看完整历史 →</a>
+      · <a class="lb-detail-link" href="/leaderboard/{{ r.domain }}">View full history →</a>
     </p>
     <div class="lb-protocols">
       {% for proto, ps in r.by_protocol.items() %}
-        {% set verdict_zh = verdict_labels.get(ps.last_verdict, ps.last_verdict) %}
+        {% set verdict_label = verdict_labels.get(ps.last_verdict, ps.last_verdict) %}
         {% set badge_class = 'ok' if ps.last_score >= 85 else ('good' if ps.last_score >= 70 else ('warn' if ps.last_score >= 50 else 'fail')) %}
-        <a class="lb-proto-chip lb-proto-{{ badge_class }}" href="/r/{{ ps.last_job_id }}" title="点击查看 {{ protocol_labels.get(proto, proto) }} 最新报告">
+        <a class="lb-proto-chip lb-proto-{{ badge_class }}" href="/r/{{ ps.last_job_id }}" title="View the latest {{ protocol_labels.get(proto, proto) }} report">
           <span class="lb-proto-name">{{ protocol_labels.get(proto, proto) }}</span>
           <span class="lb-proto-score">{{ "%.0f"|format(ps.last_score) }}</span>
-          <span class="lb-proto-verdict">{{ verdict_zh }}</span>
+          <span class="lb-proto-verdict">{{ verdict_label }}</span>
           {% if ps.count > 1 %}
             <span class="lb-proto-count">×{{ ps.count }}</span>
           {% endif %}
@@ -86,44 +86,44 @@
     {% endfor %}
     {% if top_failed %}
       <p class="lb-issues">
-        常见问题:
+        Common issues:
         {% for name, cnt in top_failed[:3] %}
-          <code>{{ name }}</code>{% if not loop.last %}、{% endif %}
+           <code>{{ name }}</code>{% if not loop.last %}, {% endif %}
         {% endfor %}
       </p>
     {% endif %}
   </div>
   <div class="lb-score lb-score-{{ r.verdict_class }}">
     <span class="lb-score-num">{{ "%.0f"|format(r.overall_median) }}</span>
-    <span class="lb-score-label">中位</span>
+    <span class="lb-score-label">median</span>
   </div>
 </article>
 {% endmacro %}
 
 {% block content %}
 <section class="hub-hero">
-  <h1>AI API 中转站红黑榜</h1>
+  <h1>AI API Relay Leaderboard</h1>
   <p class="answer-capsule">
-    <strong>Veridrop</strong> 基于社区公开检测数据自动聚合,按
-    <strong>贝叶斯加权评分</strong>排行 AI API 中转站质量(测试越多 + 分数越稳定 → 排名越前)。
-    数据来自 <strong>{{ summary.total_reports }}</strong> 份公开检测报告,共覆盖
-    <strong>{{ summary.total_relays }}</strong> 家中转站
-    ({{ summary.ranked_relays }} 家有 ≥2 次检测可参与正式排名)。
-    <span class="hub-meta-inline">数据每 10 分钟刷新 · 想给中转站做检测?<a href="/">回首页</a></span>
+    <strong>Veridrop</strong> auto-aggregates community-published detection data and ranks AI API
+    relay quality by <strong>Bayesian-weighted scoring</strong> (more tests + more stable scores →
+    higher rank). The data comes from <strong>{{ summary.total_reports }}</strong> public detection
+    reports covering <strong>{{ summary.total_relays }}</strong> relays
+    ({{ summary.ranked_relays }} have ≥2 detections and qualify for formal ranking).
+    <span class="hub-meta-inline">Data refreshes every 10 minutes · Want to test a relay? <a href="/">Back to home</a></span>
   </p>
 </section>
 
 {% if not top_relays and not has_rest %}
 <section class="hub-note">
-  <p>暂无检测数据。<a href="/">去做第一次检测 →</a></p>
+  <p>No detection data yet. <a href="/">Run the first detection →</a></p>
 </section>
 {% else %}
 
-{# ───── 主榜 Top 10 ───── #}
+{# ───── Main board Top 10 ───── #}
 {% if top_relays %}
 <section class="lb-section-heading">
-  <h2>🏆 主榜 Top {{ top_relays|length }}</h2>
-  <p class="muted small">按贝叶斯加权评分排序 — 测试越多次的中转站,分数越能反映真实能力</p>
+  <h2>🏆 Main Board Top {{ top_relays|length }}</h2>
+  <p class="muted small">Sorted by Bayesian-weighted score — the more times a relay is tested, the more its score reflects true capability</p>
 </section>
 <section class="leaderboard-list">
   {% for r in top_relays %}
@@ -132,11 +132,11 @@
 </section>
 {% endif %}
 
-{# ───── 全部列表(分页)───── #}
+{# ───── Full list (paginated) ───── #}
 {% if has_rest %}
 <section class="lb-section-heading">
-  <h2>全部中转站</h2>
-  <p class="muted small">共 {{ summary.total_relays }} 家,当前第 {{ page }} / {{ total_pages }} 页</p>
+  <h2>All relays</h2>
+  <p class="muted small">{{ summary.total_relays }} total — page {{ page }} / {{ total_pages }}</p>
 </section>
 {% if rest_relays %}
 <section class="leaderboard-list">
@@ -147,11 +147,11 @@
 
 {# Pagination controls #}
 {% if total_pages > 1 %}
-<nav class="lb-pagination" aria-label="分页">
+<nav class="lb-pagination" aria-label="Pagination">
   {% if page > 1 %}
-    <a class="lb-page-btn" href="?page={{ page - 1 }}">← 上一页</a>
+    <a class="lb-page-btn" href="?page={{ page - 1 }}">← Previous</a>
   {% else %}
-    <span class="lb-page-btn lb-page-disabled">← 上一页</span>
+    <span class="lb-page-btn lb-page-disabled">← Previous</span>
   {% endif %}
 
   {# Page numbers — show all if ≤7, else current ±2 with ellipsis #}
@@ -169,9 +169,9 @@
   {% endfor %}
 
   {% if page < total_pages %}
-    <a class="lb-page-btn" href="?page={{ page + 1 }}">下一页 →</a>
+    <a class="lb-page-btn" href="?page={{ page + 1 }}">Next →</a>
   {% else %}
-    <span class="lb-page-btn lb-page-disabled">下一页 →</span>
+    <span class="lb-page-btn lb-page-disabled">Next →</span>
   {% endif %}
 </nav>
 {% endif %}
@@ -181,16 +181,18 @@
 {% endif %}
 
 <section class="hub-note">
-  <h2>红黑榜怎么算的?</h2>
+  <h2>How is the leaderboard computed?</h2>
   <p>
-    每份 <code>/r/{job_id}</code> 公开报告自动汇入此榜,按 <strong>base_url 域名</strong>分组。
-    排名使用 <strong>贝叶斯加权评分</strong>(prior=50,prior_weight=5):
-    一次满分 100 的中转站排名分仅 58.3,需要测 ≥10 次稳定接近满分才能升到主榜前列。
-    这避免了"新中转站随机跑一次拿满分就霸榜"的问题,真正经得起多次检验的中转站排前。
-    UI 显示的"中位"是历次分数的中位数(给用户直观参考),排序按贝叶斯加权。
+    Every public <code>/r/{job_id}</code> report flows automatically into this board, grouped by
+    <strong>base_url domain</strong>. Ranking uses <strong>Bayesian-weighted scoring</strong>
+    (prior=50, prior_weight=5): a relay with one perfect 100 scores only 58.3; it takes ≥10 stable
+    near-perfect tests to climb to the top of the main board. This prevents "a brand-new relay runs
+    once, gets lucky 100, and dominates the board" — relays that truly withstand repeated testing
+    rank first. The "median" shown in the UI is the median of all historical scores (an intuitive
+    reference), while ordering follows the Bayesian weighting.
   </p>
   <p class="small muted">
-    单次检测的中转站不进入主榜(避免噪声),仍然在全部列表底部可见。
+    Relays tested only once do not enter the main board (to avoid noise), but remain visible at the bottom of the full list.
   </p>
 </section>
 {% endblock %}

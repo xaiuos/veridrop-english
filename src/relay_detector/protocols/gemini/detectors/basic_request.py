@@ -9,7 +9,7 @@ from .utils import finish_reason, message_text, usage
 
 class BasicRequestDetector(ActiveDetector):
     name = "basic_request"
-    display_name = "基础请求"
+    display_name = "Basic Request"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:

@@ -144,15 +144,16 @@ async def leaderboard_page(
     request: Request,
     page: int = 1,
 ) -> HTMLResponse:
-    """中转站红黑榜 — 按域名聚合所有公开检测报告。
+    """Relay leaderboard — aggregates all public detection reports by domain.
 
-    SEO/GEO 杀手锏:任意「XX 中转站怎么样」搜索直接命中此页。
+    SEO/GEO killer feature: any "is relay XX any good" search lands directly
+    on this page.
 
     Layout:
-      - Top 10 (主榜):always visible, no pagination, sorted by Bayesian-
+      - Top 10 (main board): always visible, no pagination, sorted by Bayesian-
         weighted ranking score so consistently-tested relays beat fluky-
         single-pass ones.
-      - Rest (全部列表):paginated 25/page via ?page=N. Each page indexable
+      - Rest (full list): paginated 25/page via ?page=N. Each page indexable
         for SEO long-tail (`?page=2` etc.).
     """
     all_relays, summary = leaderboard.aggregate()
@@ -184,11 +185,13 @@ async def leaderboard_page(
 
 @app.get("/leaderboard/{domain}", response_class=HTMLResponse)
 async def leaderboard_domain_page(request: Request, domain: str) -> HTMLResponse:
-    """每域名独立详情页 — SEO 长尾关键的杠杆。
+    """Per-domain detail page — the key lever for SEO long-tail.
 
-    用户搜「{domain} 中转站怎么样」/「{domain} 真假」/「{domain} 评测」时,
-    Google 直接命中此页。包含该域名的所有历史检测、协议覆盖、最常失败的
-    detector,以及指向每份具体 /r/{job_id} 报告的链接。
+    When users search "{domain} relay review" / "{domain} fake or real" /
+    "{domain} test", Google lands directly on this page. It contains every
+    historical detection for that domain, protocol coverage, the most
+    frequently failing detectors, and links to each specific /r/{job_id}
+    report.
     """
     if not leaderboard.is_valid_domain(domain):
         raise HTTPException(status_code=404, detail="invalid domain")
@@ -315,8 +318,9 @@ async def _preflight_or_422(
         detail={
             "code": "model_not_alive",
             "message": (
-                f"模型 {model} 在该中转站实际不可用。中转站把它列在 /v1/models "
-                "里,但真实请求被上游拒绝。"
+                f"Model {model} is actually unavailable on this relay. It is "
+                "listed in /v1/models, but real requests are rejected by the "
+                "upstream."
             ),
             "model": model,
             "protocol": protocol,
@@ -349,7 +353,7 @@ async def api_probe(
             {
                 "ok": False,
                 "auth_ok": True,
-                "error": f"探测过于频繁,请在 {wait} 秒后再试",
+                "error": f"Probing too frequently. Please retry in {wait} seconds",
                 "rate_limited": True,
             },
             status_code=429,
@@ -421,12 +425,12 @@ async def api_detect_claude(
     elif _protocol_from_model(model) == "gemini":
         raise HTTPException(
             status_code=400,
-            detail="这是 Gemini 模型,请在 /gemini 页面提交检测。",
+            detail="This is a Gemini model. Please submit the detection on the /gemini page.",
         )
     elif _protocol_from_model(model) == "openai":
         raise HTTPException(
             status_code=400,
-            detail="这是 OpenAI 模型,请在 /openai 页面提交检测。",
+            detail="This is an OpenAI model. Please submit the detection on the /openai page.",
         )
 
     await _preflight_or_422(request, base_url, api_key, model, "anthropic")
@@ -560,7 +564,7 @@ async def result_jpg(job_id: str) -> Response:
 
 
 _PROTOCOL_LABELS = {"anthropic": "Claude", "openai": "OpenAI", "gemini": "Gemini"}
-_VERDICT_LABELS = {"passed": "通过", "marginal": "存在风险", "failed": "未达标"}
+_VERDICT_LABELS = {"passed": "Passed", "marginal": "At Risk", "failed": "Failed"}
 
 
 def _seo_meta_for_report(report: dict) -> dict[str, str]:
@@ -576,7 +580,7 @@ def _seo_meta_for_report(report: dict) -> dict[str, str]:
     domain = base_url
     if "://" in base_url:
         domain = base_url.split("://", 1)[1].split("/", 1)[0]
-    domain = domain or "中转站"
+    domain = domain or "relay"
 
     protocol = str(report.get("protocol") or "anthropic")
     proto_label = _PROTOCOL_LABELS.get(protocol, protocol)
@@ -584,7 +588,7 @@ def _seo_meta_for_report(report: dict) -> dict[str, str]:
     model = str(report.get("target_model") or "")
     score = float(report.get("total_score") or 0)
     verdict = str(report.get("verdict") or "failed")
-    verdict_zh = _VERDICT_LABELS.get(verdict, verdict)
+    verdict_label = _VERDICT_LABELS.get(verdict, verdict)
 
     results = report.get("results") or []
     pass_count = sum(1 for r in results if isinstance(r, dict) and r.get("status") == "pass")
@@ -592,25 +596,25 @@ def _seo_meta_for_report(report: dict) -> dict[str, str]:
     total = len(results)
 
     # Title diversity drives long-tail SEO: each report becomes its own
-    # indexable page with a distinct query target ("X 站测 gpt-5.5 怎么样").
+    # indexable page with a distinct query target ("X relay gpt-5.5 test").
     # Without the model, every report on the same domain shared one title.
     if model:
         title = (
-            f"{domain} {proto_label} 中转站 {model} 检测:"
-            f"{score:.0f}/100 {verdict_zh} | Veridrop"
+            f"{domain} {proto_label} Relay {model} Detection: "
+            f"{score:.0f}/100 {verdict_label} | Veridrop"
         )
     else:
         title = (
-            f"{domain} {proto_label} 中转站检测:{score:.0f}/100 {verdict_zh} | Veridrop"
+            f"{domain} {proto_label} Relay Detection: {score:.0f}/100 {verdict_label} | Veridrop"
         )
     description = (
-        f"对 {domain} 进行 {proto_label} 中转站检测的完整报告:"
-        f"模型 {model},总分 {score:.0f}/100,判定为「{verdict_zh}」。"
-        f"{total} 项检测中 {pass_count} 项通过、{fail_count} 项未通过。"
-        f"Veridrop 字段级穿透,识别中转站真伪与质量。"
+        f"Full report of the {proto_label} relay detection for {domain}: "
+        f"model {model}, total score {score:.0f}/100, verdict \"{verdict_label}\". "
+        f"{pass_count} of {total} checks passed, {fail_count} failed. "
+        f"Veridrop's field-level inspection identifies relay authenticity and quality."
     )
     og_description = (
-        f"{domain} 检测报告:{score:.0f}/100 {verdict_zh}({pass_count}/{total} 项通过)"
+        f"{domain} detection report: {score:.0f}/100 {verdict_label} ({pass_count}/{total} checks passed)"
     )
     return {
         "seo_title": title[:155],
@@ -628,7 +632,7 @@ async def result_page(request: Request, job_id: str) -> HTMLResponse:
         return templates.TemplateResponse(
             request, "running.html", {"job_id": job_id, "job": j},
         )
-    # Domain feeds the breadcrumb (首页 › 红黑榜 › {domain} › 报告).
+    # Domain feeds the breadcrumb (Home › Leaderboard › {domain} › Report).
     # Goes through is_valid_domain so a malformed base_url doesn't produce
     # a broken /leaderboard/{garbage} link.
     base_url = str(j.report.get("base_url") or "")
@@ -784,37 +788,37 @@ async def sitemap_xml() -> Response:
 
 _DETECTOR_DISPLAY = {
     "anthropic": [
-        ("identity", "身份一致性"),
-        ("behavioral_signature", "行为签名验证"),
-        ("thinking_signature", "思维签名验证"),
-        ("consistency", "模型一致性"),
-        ("knowledge", "知识准确度"),
-        ("pdf", "PDF 文档识别"),
-        ("structured_output", "结构化输出"),
-        ("protocol", "协议规范性"),
-        ("integrity", "响应完整性"),
-        ("token_usage", "Token 用量"),
-        ("message_id", "消息标识规范"),
-        ("long_context", "长上下文真实性"),
+        ("identity", "Identity Consistency"),
+        ("behavioral_signature", "Behavioral Signature"),
+        ("thinking_signature", "Thinking Signature"),
+        ("consistency", "Model Consistency"),
+        ("knowledge", "Knowledge Accuracy"),
+        ("pdf", "PDF Document Recognition"),
+        ("structured_output", "Structured Output"),
+        ("protocol", "Protocol Conformance"),
+        ("integrity", "Response Integrity"),
+        ("token_usage", "Token Usage"),
+        ("message_id", "Message ID Conformance"),
+        ("long_context", "Long-Context Authenticity"),
     ],
     "openai": [
-        ("basic_request", "基础请求"),
-        ("model_consistency", "模型一致性"),
-        ("function_calling", "函数调用"),
-        ("structured_output", "结构化输出"),
-        ("protocol", "协议规范性"),
-        ("integrity", "流式一致性"),
-        ("token_billing", "Token 计费"),
-        ("long_context", "长上下文真实性"),
+        ("basic_request", "Basic Request"),
+        ("model_consistency", "Model Consistency"),
+        ("function_calling", "Function Calling"),
+        ("structured_output", "Structured Output"),
+        ("protocol", "Protocol Conformance"),
+        ("integrity", "Streaming Consistency"),
+        ("token_billing", "Token Billing"),
+        ("long_context", "Long-Context Authenticity"),
     ],
     "gemini": [
-        ("basic_request", "基础请求"),
-        ("model_info", "模型响应形状"),
-        ("function_calling", "函数调用"),
-        ("structured_output", "结构化输出"),
-        ("protocol", "协议规范性"),
-        ("integrity", "流式一致性"),
-        ("token_usage", "Token 用量"),
+        ("basic_request", "Basic Request"),
+        ("model_info", "Model Response Shape"),
+        ("function_calling", "Function Calling"),
+        ("structured_output", "Structured Output"),
+        ("protocol", "Protocol Conformance"),
+        ("integrity", "Streaming Consistency"),
+        ("token_usage", "Token Usage"),
     ],
 }
 
@@ -833,22 +837,22 @@ def _result_rows(report: dict) -> list[dict]:
         status = str(r.get("status") or "skip")
         score = float(r.get("score") or 0.0)
         if status == "pass":
-            label_short, css = "通过", "ok"
+            label_short, css = "Passed", "ok"
         elif status == "skip" and name == "long_context":
             # long_context is opt-in. Skip can mean "user didn't check the
             # box", "model context too small", or "all tiers rate-limited".
             # The detail's summary clarifies which; the badge stays neutral.
-            label_short, css = "未启用", "muted"
+            label_short, css = "Not Enabled", "muted"
         elif status == "skip" and name in {"token_billing", "token_usage"}:
-            label_short, css = "无法判断", "muted"
+            label_short, css = "Inconclusive", "muted"
         elif status == "skip":
-            label_short, css = "跳过", "muted"
+            label_short, css = "Skipped", "muted"
         elif status == "error":
-            label_short, css = "异常", "fail"
+            label_short, css = "Error", "fail"
         elif score >= 70:
-            label_short, css = "警告", "warn"
+            label_short, css = "Warning", "warn"
         else:
-            label_short, css = "未通过", "fail"
+            label_short, css = "Failed", "fail"
         out.append({
             "name": name,
             "label": label,
@@ -863,7 +867,7 @@ def _result_rows(report: dict) -> list[dict]:
 def _report_notes(report: dict) -> list[dict[str, str]]:
     """Human-readable report notes for the result page.
 
-    These are deliberately plain Chinese explanations. The raw detector JSON
+    These are deliberately plain-English explanations. The raw detector JSON
     is useful for debugging, but public reports need to say what happened in
     terms a non-implementer can act on.
     """
@@ -896,19 +900,22 @@ def _report_notes(report: dict) -> list[dict[str, str]]:
         markdown_seen = bool(sd.get("markdown_json_seen"))
         if markdown_seen:
             message = (
-                "底层模型把 JSON 包在 Markdown 代码块里(```json ... ```),"
-                "OpenAI strict 模式应该返回裸 JSON。说明 response_format 被透传了,"
-                "但底层模型没有真正理解 strict 模式 — 通常是中转站把请求转给了非 GPT 模型。"
+                "The underlying model wrapped the JSON in a Markdown code block "
+                "(```json ... ```). OpenAI strict mode should return bare JSON. "
+                "This means response_format was forwarded, but the underlying "
+                "model did not truly honor strict mode — usually a sign the "
+                "relay routed the request to a non-GPT model."
             )
         else:
             message = (
-                "返回的不是 JSON 也没有代码块包装。请求已发送 "
-                "response_format=json_schema strict=true,但中转站很可能根本没把这个参数透传给后端。"
+                "The response was neither JSON nor code-block-wrapped. The "
+                "request sent response_format=json_schema strict=true, but the "
+                "relay most likely never forwarded this parameter to the backend."
             )
         if text:
-            message += f" 实际返回片段: {text}"
+            message += f" Actual response excerpt: {text}"
         notes.append({
-            "title": "结构化输出没有真正生效",
+            "title": "Structured output is not actually in effect",
             "body": message,
         })
 
@@ -931,22 +938,26 @@ def _report_notes(report: dict) -> list[dict[str, str]]:
         # Critical-severity adapter fingerprints — the relay is almost
         # certainly translating from a different upstream backend.
         notes.append({
-            "title": "中转站疑似伪装成 OpenAI",
+            "title": "Relay suspected of impersonating OpenAI",
             "body": (
-                "响应的 usage 字段里出现了 Anthropic / Google 后端才会用的字段(如 "
-                "claude_cache_creation_*、gemini_* 或 usage_source 自报非 openai)。"
-                "这强烈暗示中转站把你的请求转发给了别的厂商后端再包装成 OpenAI 响应,"
-                "所谓的 GPT 输出可能并非真正的 OpenAI 模型在生成。"
+                "The usage field in the response contains fields only used by "
+                "Anthropic / Google backends (such as claude_cache_creation_*, "
+                "gemini_*, or usage_source self-reporting non-openai). "
+                "This strongly suggests the relay forwarded your request to a "
+                "different vendor's backend and repackaged it as an OpenAI "
+                "response — the so-called GPT output may not be generated by a "
+                "genuine OpenAI model."
             ),
         })
     elif "usage_mixed_token_fields" in issue_codes:
         # Lower-severity: just naming residue, may or may not mean translation.
         notes.append({
-            "title": "响应里有适配层痕迹",
+            "title": "Traces of an adapter layer in the response",
             "body": (
-                "返回的 usage 同时含有 OpenAI 的 prompt_tokens/completion_tokens 和 "
-                "Anthropic/Responses 风格的 input_tokens/output_tokens。"
-                "通常说明中间有转换层,但还不足以确认换了后端。"
+                "The returned usage contains both OpenAI's prompt_tokens/"
+                "completion_tokens and Anthropic/Responses-style input_tokens/"
+                "output_tokens. This usually indicates a translation layer in "
+                "between, but is not enough to confirm a backend swap."
             ),
         })
     token_billing = results.get("token_billing") or {}
@@ -958,21 +969,23 @@ def _report_notes(report: dict) -> list[dict[str, str]]:
     if token_billing:
         if token_billing.get("status") == "skip":
             notes.append({
-                "title": "暂时无法判断 Token 是否虚报",
+                "title": "Cannot determine yet whether tokens are over-reported",
                 "body": (
-                    "接口没有给出足够完整的 Token 用量信息,所以这次不能确认它有没有多算。"
+                    "The API did not provide complete enough token usage "
+                    "information, so over-counting cannot be confirmed this time."
                 ),
             })
         elif token_billing.get("status") != "pass":
             notes.append({
-                "title": "Token 计费存在风险",
+                "title": "Token billing at risk",
                 "body": td.get("evaluation_zh") or (
-                    "Token 统计有明显偏差,建议留意是否存在多算或统计错误。"
+                    "Token statistics show a significant deviation. Watch out "
+                    "for over-counting or accounting errors."
                 ),
             })
         # Note: when token_billing passes, the green check in the detector
         # list already conveys this. We deliberately don't add a redundant
-        # "Token 计费正常" note — report notes should only carry signal that
+        # "Token billing OK" note — report notes should only carry signal that
         # needs user attention.
     return notes
 
@@ -992,14 +1005,17 @@ def _anthropic_report_notes(report: dict) -> list[dict[str, str]]:
         return []
     if token_usage.get("status") == "skip":
         return [{
-            "title": "暂时无法判断 Token 是否虚报",
-            "body": "接口没有返回完整 usage 字段,所以这次不能确认它有没有多算。",
+            "title": "Cannot determine yet whether tokens are over-reported",
+            "body": "The API did not return a complete usage field, so "
+                    "over-counting cannot be confirmed this time.",
         }]
     if token_usage.get("status") != "pass":
         return [{
-            "title": "Token 用量存在风险",
-            "body": td.get("evaluation_zh") or (
-                "usage 字段缺失或统计不自洽,建议不要直接依赖该中转站返回的 token 数做计费核算。"
+            "title": "Token usage at risk",
+                "body": td.get("evaluation_zh") or (
+                    "The usage field is missing or internally inconsistent. "
+                    "Do not rely directly on this relay's token counts for "
+                    "billing reconciliation."
             ),
         }]
     return []
@@ -1016,10 +1032,11 @@ def _gemini_report_notes(report: dict) -> list[dict[str, str]]:
     sd = structured.get("details") if isinstance(structured.get("details"), dict) else {}
     if structured.get("status") != "pass":
         notes.append({
-            "title": "结构化输出没有真正生效",
+            "title": "Structured output is not actually in effect",
             "body": sd.get("evaluation_zh") or (
-                "请求已发送 OpenAI 兼容的 response_format=json_schema strict=true,"
-                "但 Gemini 中转站返回内容无法按 schema 解析。"
+                "The request sent the OpenAI-compatible "
+                "response_format=json_schema strict=true, but the Gemini relay's "
+                "returned content could not be parsed against the schema."
             ),
         })
 
@@ -1031,9 +1048,10 @@ def _gemini_report_notes(report: dict) -> list[dict[str, str]]:
     )
     if token_usage and token_usage.get("status") != "pass":
         notes.append({
-            "title": "Token 用量存在风险",
-            "body": td.get("evaluation_zh") or (
-                "usage 字段不完整或统计不自洽,建议不要直接依赖它做计费核算。"
+            "title": "Token usage at risk",
+                "body": td.get("evaluation_zh") or (
+                    "The usage field is incomplete or internally inconsistent. "
+                    "Do not rely directly on it for billing reconciliation."
             ),
         })
 
@@ -1045,18 +1063,20 @@ def _gemini_report_notes(report: dict) -> list[dict[str, str]]:
     )
     if integrity and integrity.get("status") != "pass":
         notes.append({
-            "title": "流式响应存在偏差",
-            "body": idetails.get("evaluation_zh") or (
-                "stream 与 non-stream 的文本、结束原因或 usage 字段没有对齐。"
+            "title": "Streaming response deviation detected",
+                "body": idetails.get("evaluation_zh") or (
+                    "The text, finish reason, or usage fields do not align "
+                    "between stream and non-stream responses."
             ),
         })
 
     if not notes:
         notes.append({
-            "title": "Gemini OpenAI 兼容协议表现良好",
+            "title": "Gemini OpenAI-compatible protocol performs well",
             "body": (
-                "基础请求、模型字段、tool 调用、结构化输出、流式响应和 Token 用量字段基本符合 "
-                "OpenAI Chat Completions 规范。"
+                "Basic requests, model fields, tool calls, structured output, "
+                "streaming responses, and token usage fields largely conform to "
+                "the OpenAI Chat Completions specification."
             ),
         })
     return notes

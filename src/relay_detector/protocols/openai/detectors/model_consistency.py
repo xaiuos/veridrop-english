@@ -11,7 +11,7 @@ from .base import ActiveDetector
 
 class ModelConsistencyDetector(ActiveDetector):
     name = "model_consistency"
-    display_name = "模型一致性"
+    display_name = "Model Consistency"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:

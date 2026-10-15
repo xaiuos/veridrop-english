@@ -42,7 +42,7 @@ OUTPUT_CLOSE_FLOOR = 3
 
 class TokenUsageDetector(ActiveDetector):
     name = "token_usage"
-    display_name = "Token 用量"
+    display_name = "Token Usage"
     weight = 10.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -135,9 +135,9 @@ class TokenUsageDetector(ActiveDetector):
             "actual_input_tokens": short_input,
             "pass": count_ok,
             "note": (
-                "count_tokens 与实际 Messages usage 接近"
+        "count_tokens is close to the actual Messages usage"
                 if count_ok
-                else "count_tokens 不可用或与实际 usage 偏差过大"
+        else "count_tokens is unavailable or deviates too far from the actual usage"
             ),
         }
         if count_ok:
@@ -257,9 +257,9 @@ def _int(value: Any) -> int | None:
 
 def _evaluation(score: float, count_result: dict[str, Any]) -> str:
     if score >= 90:
-        return "Token 用量基本可信: usage 字段完整,长短 prompt 增量合理,stream 与 non-stream 统计一致,且 count_tokens 对得上。"
+        return "Token usage is largely trustworthy: usage fields are complete, long/short prompt growth is reasonable, stream and non-stream statistics agree, and count_tokens checks out."
     if score >= 80:
         if count_result.get("error"):
-            return "Token 用量基本可信: usage 自洽且流式/非流式一致,但该中转站没有可用的 count_tokens 端点,无法做最强输入 token 交叉验证。"
-        return "Token 用量基本可信: 核心 usage 检查通过,但有一个辅助交叉验证不完整。"
-    return "Token 用量存在风险: usage 字段缺失、长短 prompt 增量异常、输出 token 超出请求上限,或 stream 与 non-stream token 统计不一致。"
+            return "Token usage is largely trustworthy: usage is self-consistent and streaming/non-streaming agree, but this relay has no usable count_tokens endpoint, so the strongest input-token cross-check is unavailable."
+        return "Token usage is largely trustworthy: core usage checks passed, but one auxiliary cross-check is incomplete."
+    return "Token usage is at risk: usage fields are missing, long/short prompt growth is abnormal, output tokens exceed the requested cap, or stream and non-stream token statistics disagree."

@@ -94,20 +94,22 @@ def baseline_path(model_id: str, mode: Mode) -> Path | None:
 
 def verdict_caption(score: float) -> str:
     if score >= 85:
-        return "协议表现良好"
+        return "Good Protocol Performance"
     if score >= 70:
-        return "基本通过"
+        return "Largely Passed"
     if score >= 50:
-        return "存在风险"
-    return "未达标"
+        return "At Risk"
+    return "Failed"
 
 
 def tier_banner() -> tuple[str, str]:
     return (
-        "协议级验证",
+        "Protocol-level verification",
         (
-            "本检测通过 OpenAI 兼容协议 (POST /chat/completions) 探测 Gemini 中转站,"
-            "验证响应字段、tool 调用、结构化输出、流式一致性和 usage 字段是否符合 OpenAI 规范。"
-            "它不提供加密级模型真伪证明。"
+            "This detection probes the Gemini relay through the OpenAI-compatible "
+            "protocol (POST /chat/completions), verifying whether response fields, "
+            "tool calls, structured output, streaming consistency, and the usage "
+            "field conform to the OpenAI spec. It does not provide cryptographic "
+            "proof of model authenticity."
         ),
     )

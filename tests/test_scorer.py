@@ -68,10 +68,10 @@ def test_verdict_thresholds():
 
 
 def test_summary_text_buckets():
-    assert summary_text(95, "passed") == "优秀"
-    assert summary_text(80, "passed") == "通过"
-    assert summary_text(60, "marginal") == "基本合格"
-    assert summary_text(20, "failed") == "未达标"
+    assert summary_text(95, "passed") == "Excellent"
+    assert summary_text(80, "passed") == "Passed"
+    assert summary_text(60, "marginal") == "Marginally OK"
+    assert summary_text(20, "failed") == "Failed"
 
 
 def test_compute_total_treats_error_as_zero_weighted():
@@ -136,7 +136,7 @@ def test_fatal_run_error_detects_model_unavailable_errors():
     ]
     msg = fatal_run_error(results)
     assert msg is not None
-    assert "模型" in msg
+    assert "model" in msg
 
 
 # ---- has_critical_issues / effective_verdict ----------------------------

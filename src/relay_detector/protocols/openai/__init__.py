@@ -89,20 +89,22 @@ def baseline_path(model_id: str, mode: Mode) -> Path | None:
 
 def verdict_caption(score: float) -> str:
     if score >= 85:
-        return "协议表现良好"
+        return "Good Protocol Performance"
     if score >= 70:
-        return "基本通过"
+        return "Largely Passed"
     if score >= 50:
-        return "存在风险"
-    return "未达标"
+        return "At Risk"
+    return "Failed"
 
 
 def tier_banner() -> tuple[str, str]:
     return (
-        "行为/协议级验证",
+        "Behavioral/Protocol-level verification",
         (
-            "本检测无法可靠区分高配模型真品与低配模型伪装。"
-            "我们检测的是中转站接口是否符合 OpenAI Chat Completions 协议规范、"
-            "能力是否完整、usage 字段是否符合官方响应形状。"
+            "This detection cannot reliably distinguish a genuine high-end model "
+            "from a low-end model impersonating one. What we test is whether the "
+            "relay interface conforms to the OpenAI Chat Completions protocol "
+            "spec, whether capabilities are complete, and whether the usage "
+            "field matches the official response shape."
         ),
     )

@@ -59,7 +59,7 @@ NON_ANTHROPIC_BRAND_PATTERNS: list[tuple[str, str]] = [
     (r"\bbard\b", "Bard"),
     # Microsoft family
     (r"\bcopilot\b", "Copilot"),
-    # Open-source / 国内
+    # Open-source / Chinese vendors
     (r"\bdeepseek\b", "DeepSeek"),
     (r"\bqwen\b", "Qwen"),
     (r"\btongyi\b", "Tongyi"),
@@ -72,7 +72,7 @@ NON_ANTHROPIC_BRAND_PATTERNS: list[tuple[str, str]] = [
 
 class IdentityDetector(ActiveDetector):
     name = "identity"
-    display_name = "身份一致性"
+    display_name = "Identity Consistency"
     weight = 5.0
 
     async def run(self, client, model: str) -> DetectorResult:

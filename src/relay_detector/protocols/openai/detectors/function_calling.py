@@ -29,7 +29,7 @@ TOOL_DEF = {
 
 class FunctionCallingDetector(ActiveDetector):
     name = "function_calling"
-    display_name = "函数调用"
+    display_name = "Function Calling"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:

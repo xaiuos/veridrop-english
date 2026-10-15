@@ -203,30 +203,38 @@ async def _run(
                 outcome = await _run_openai(base_url, api_key, model, cfg)
                 report_protocol = Protocol.OPENAI
                 report_tier = DetectionTier.BEHAVIORAL
-                tier_title = "行为/协议级验证"
+                tier_title = "Behavioral/Protocol-level verification"
                 tier_message = (
-                    "本检测无法可靠区分高配模型真品与低配模型伪装。"
-                    "我们检测的是中转站接口是否符合 OpenAI Chat Completions 协议规范、"
-                    "能力是否完整、usage 字段是否符合官方响应形状。"
+                    "This detection cannot reliably distinguish a genuine "
+                    "high-end model from a low-end model impersonating one. "
+                    "What we test is whether the relay interface conforms to "
+                    "the OpenAI Chat Completions protocol spec, whether "
+                    "capabilities are complete, and whether the usage field "
+                    "matches the official response shape."
                 )
             elif protocol == "gemini":
                 outcome = await _run_gemini(base_url, api_key, model, cfg)
                 report_protocol = Protocol.GEMINI
                 report_tier = DetectionTier.PROTOCOL
-                tier_title = "协议级验证"
+                tier_title = "Protocol-level verification"
                 tier_message = (
-                    "本检测通过 OpenAI 兼容协议 (POST /chat/completions) 探测 Gemini 中转站,"
-                    "验证响应字段、tool 调用、结构化输出、流式一致性和 usage 字段是否符合 OpenAI 规范。"
-                    "它不提供加密级模型真伪证明。"
+                    "This detection probes the Gemini relay through the "
+                    "OpenAI-compatible protocol (POST /chat/completions), "
+                    "verifying whether response fields, tool calls, "
+                    "structured output, streaming consistency, and the usage "
+                    "field conform to the OpenAI spec. It does not provide "
+                    "cryptographic proof of model authenticity."
                 )
             elif protocol == "anthropic":
                 outcome = await _run_anthropic(base_url, api_key, model, cfg)
                 report_protocol = Protocol.ANTHROPIC
                 report_tier = DetectionTier.CRYPTOGRAPHIC
-                tier_title = "加密级验证"
+                tier_title = "Cryptographic verification"
                 tier_message = (
-                    "Claude thinking signature 来自 Anthropic 服务端签名。"
-                    "通过该项时,它是当前检测集中最高可信度的真伪信号。"
+                    "The Claude thinking signature is produced by an "
+                    "Anthropic server-side signature. When this check passes, "
+                    "it is the highest-confidence authenticity signal in the "
+                    "current detection suite."
                 )
             else:
                 raise ValueError(f"unsupported protocol: {protocol}")

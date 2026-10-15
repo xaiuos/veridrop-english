@@ -36,7 +36,7 @@ def _load_signatures() -> list[dict]:
 
 class BehavioralSignatureDetector(ActiveDetector):
     name = "behavioral_signature"
-    display_name = "行为签名验证"
+    display_name = "Behavioral Signature Verification"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:

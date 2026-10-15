@@ -16,7 +16,7 @@ PROMPT = "Reply with exactly: pong"
 
 class TokenParityDetector(ActiveDetector):
     name = "token_parity"
-    display_name = "Token 字段对齐"
+    display_name = "Token Field Alignment"
     weight = 10.0
 
     async def run(self, client, model: str) -> DetectorResult:

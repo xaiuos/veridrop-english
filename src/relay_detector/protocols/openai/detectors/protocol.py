@@ -14,7 +14,7 @@ from .base import PassiveDetector
 
 class ProtocolDetector(PassiveDetector):
     name = "protocol"
-    display_name = "协议规范性"
+    display_name = "Protocol Conformance"
     weight = 15.0
 
     def __init__(self) -> None:

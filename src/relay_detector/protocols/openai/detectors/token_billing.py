@@ -9,7 +9,7 @@ for controlled requests:
 3. tiny fixed outputs are not reported as huge completion token counts
 4. stream and non-stream usage are compatible for the same short prompt
 
-The public report should phrase this as "Token 数是否可信", not as tokenizer
+    The public report should phrase this as "Are the token counts trustworthy", not as tokenizer
 or provider-internal implementation detail.
 """
 
@@ -44,7 +44,7 @@ REFERENCE_ROUNDS = 3
 
 class TokenBillingDetector(ActiveDetector):
     name = "token_billing"
-    display_name = "Token 计费"
+    display_name = "Token Billing"
     weight = 10.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -99,7 +99,7 @@ class TokenBillingDetector(ActiveDetector):
         )
         sub["usage_arithmetic"] = {
             "pass": arithmetic_ok,
-            "note": "total_tokens 应等于 prompt_tokens + completion_tokens",
+        "note": "total_tokens should equal prompt_tokens + completion_tokens",
         }
         if arithmetic_ok:
             score += 20.0
@@ -135,7 +135,7 @@ class TokenBillingDetector(ActiveDetector):
         stream_ok = False
         stream_note = ""
         if not stream_usage:
-            stream_note = "接口没有返回流式 usage,无法用流式结果交叉验证"
+            stream_note = "the API returned no streaming usage, so streaming results cannot be cross-checked"
         else:
             stream_ok = _stream_usage_compatible(short_usage, stream_usage)
         sub["stream_usage"] = {
@@ -277,15 +277,15 @@ def _evaluation_text(
 ) -> str:
     if score >= 90:
         if reference_result.get("comparison_available"):
-            return "Token 数基本可信: 返回的 Token 统计自洽,并且落在正常范围内。"
-        return "Token 数基本可信: usage 加法自洽,加长文本带来的 token 增量合理,流式和非流式统计也能对上。"
+            return "Token counts are largely trustworthy: the returned token statistics are self-consistent and fall within the normal range."
+        return "Token counts are largely trustworthy: usage arithmetic is self-consistent, the token growth from longer text is reasonable, and streaming and non-streaming statistics agree."
     if score >= 70:
         if reference_result.get("comparison_available"):
-            return "Token 数有偏差: 返回的 Token 统计有部分项目超出正常范围,建议留意是否存在多算或适配层统计误差。"
+            return "Token counts are off: some items in the returned token statistics fall outside the normal range — watch for overcounting or adapter-layer accounting errors."
         if not stream_usage:
-            return "Token 数有偏差: 基础统计基本可用,但接口没有给出完整流式 usage,无法做更强交叉验证。"
-        return "Token 数有偏差: 有部分检查没有对上,建议留意是否存在额外提示词、适配层统计误差或轻微多算。"
-    return "Token 数明显异常: usage 字段、token 增量或流式/非流式统计存在明显问题,有虚报或统计错误风险。"
+            return "Token counts are off: the basic statistics are usable, but the API did not provide complete streaming usage, so no stronger cross-check is possible."
+        return "Token counts are off: some checks did not line up — watch for injected extra prompts, adapter-layer accounting errors, or mild overcounting."
+    return "Token counts are clearly abnormal: there are obvious problems in usage fields, token growth, or streaming/non-streaming statistics — a risk of inflated reporting or accounting errors."
 
 
 async def _get_reference(model: str) -> dict[str, Any] | None:
@@ -404,7 +404,7 @@ def _compare_reference(
             "comparison_available": False,
             "pass": True,
             "score": 100.0,
-            "note": "仅做本次响应自洽检查",
+        "note": "self-consistency check of this response only",
         }
 
     ranges = reference.get("ranges") if isinstance(reference.get("ranges"), dict) else {}

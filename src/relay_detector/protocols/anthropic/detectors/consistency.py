@@ -29,7 +29,7 @@ RUNS_QUICK = 1
 
 class ConsistencyDetector(ActiveDetector):
     name = "consistency"
-    display_name = "模型一致性"
+    display_name = "Model Consistency"
     weight = 10.0
 
     async def run(self, client, model: str) -> DetectorResult:

@@ -39,7 +39,7 @@ DELTA_MAX = 140
 
 class TokenUsageDetector(ActiveDetector):
     name = "token_usage"
-    display_name = "Token 用量"
+    display_name = "Token Usage"
     weight = 10.0
 
     async def run(self, client, model: str) -> DetectorResult:
@@ -96,7 +96,7 @@ class TokenUsageDetector(ActiveDetector):
         )
         sub["usage_arithmetic"] = {
             "pass": arithmetic_ok,
-            "note": "total_tokens 应等于 prompt_tokens + completion_tokens",
+        "note": "total_tokens should equal prompt_tokens + completion_tokens",
         }
         if arithmetic_ok:
             score += 20.0
@@ -128,11 +128,11 @@ class TokenUsageDetector(ActiveDetector):
 
         stream_ok = bool(stream_usage) and _usage_close(short_usage, stream_usage)
         if not stream_usage:
-            stream_note = "接口没有返回流式 usage,无法用流式结果交叉验证"
+            stream_note = "the API returned no streaming usage, so streaming results cannot be cross-checked"
         elif stream_ok:
-            stream_note = "stream 与 non-stream 的 usage 接近"
+            stream_note = "stream and non-stream usage are close"
         else:
-            stream_note = "stream 与 non-stream 的 usage 偏差超出容忍"
+            stream_note = "stream and non-stream usage deviate beyond tolerance"
         sub["stream_usage"] = {
             "non_stream_usage": short_usage,
             "stream_usage": stream_usage,
@@ -156,10 +156,10 @@ class TokenUsageDetector(ActiveDetector):
 
 def _evaluation(score: float, usage_present: bool) -> str:
     if score >= 80.0:
-        return "Token 用量基本可信: usage 字段完整,total = prompt + completion 自洽,长 prompt 增量合理。"
+        return "Token usage is largely trustworthy: usage fields are complete, total = prompt + completion is self-consistent, and long-prompt growth is reasonable."
     if not usage_present:
-        return "Token 用量无法判断: 接口没有返回完整 usage 字段。"
-    return "Token 用量存在风险: usage 不自洽,或长短 prompt 的 token 增量不合理,或流式与非流式不一致。"
+        return "Token usage cannot be judged: the API did not return complete usage fields."
+    return "Token usage is at risk: usage is not self-consistent, long/short prompt token growth is unreasonable, or streaming and non-streaming disagree."
 
 
 def _arithmetic_ok(u: dict[str, Any]) -> bool:

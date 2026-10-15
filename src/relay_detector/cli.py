@@ -319,28 +319,28 @@ def _resolve_protocol(protocol_arg: Optional[str], model: str) -> Protocol:
 _PROTOCOL_TIERS = {
     Protocol.ANTHROPIC: (
         DetectionTier.CRYPTOGRAPHIC,
-        "加密级验证",
+        "Cryptographic verification",
         (
-            "Claude thinking signature 来自 Anthropic 服务端签名。"
-            "通过该项时,它是当前检测集中最高可信度的真伪信号。"
+            "Claude thinking signatures come from Anthropic server-side signing. "
+            "When this check passes, it is the highest-confidence authenticity signal in the current detection set."
         ),
     ),
     Protocol.OPENAI: (
         DetectionTier.BEHAVIORAL,
-        "行为/协议级验证",
+        "Behavioral/Protocol-level verification",
         (
-            "本检测无法可靠区分高配模型真品与低配模型伪装。"
-            "我们检测的是中转站接口是否符合 OpenAI Chat Completions 协议规范、"
-            "能力是否完整、usage 字段是否符合官方响应形状。"
+            "This detection cannot reliably distinguish a genuine high-tier model from a low-tier model in disguise. "
+            "What we detect is whether the relay interface conforms to the OpenAI Chat Completions protocol spec, "
+            "whether capabilities are complete, and whether usage fields match the official response shape."
         ),
     ),
     Protocol.GEMINI: (
         DetectionTier.PROTOCOL,
-        "协议级验证",
+        "Protocol-level verification",
         (
-            "本检测通过 OpenAI 兼容协议 (POST /chat/completions) 探测 "
-            "Gemini 中转站,验证响应字段、tool 调用、结构化输出、流式一致性"
-            "和 usage 字段是否符合 OpenAI 规范。它不提供加密级模型真伪证明。"
+            "This detection probes Gemini relays through the OpenAI-compatible protocol (POST /chat/completions), "
+            "verifying whether response fields, tool calling, structured output, streaming consistency, "
+            "and usage fields conform to the OpenAI spec. It does not provide cryptographic proof of model authenticity."
         ),
     ),
 }
@@ -454,34 +454,34 @@ _SEVERITY_COLOR = {
     "critical": "bold red",
 }
 _SEVERITY_LABEL = {
-    "ok": "✓ 一致",
-    "minor": "▲ 轻微",
-    "major": "⚠ 重大",
-    "critical": "✗ 严重",
+    "ok": "✓ consistent",
+    "minor": "▲ minor",
+    "major": "⚠ major",
+    "critical": "✗ critical",
 }
 
 
 @app.command(name="compare")
 def compare_cmd(
     relay_report: Path = typer.Argument(
-        ..., help="relay-detector detect 输出的 JSON 报告"
+        ..., help="JSON report produced by relay-detector detect"
     ),
     baseline: Optional[Path] = typer.Option(
         None,
         "--baseline",
         "-b",
-        help="基线 JSON 文件。不传则自动从 data/baselines/ 按 model+mode 查找。",
+        help="Baseline JSON file. If omitted, it is looked up automatically in data/baselines/ by model+mode.",
     ),
     baseline_dir: Path = typer.Option(
         Path("data/baselines"),
         "--baseline-dir",
-        help="自动查找基线时的目录",
+        help="Directory used for automatic baseline lookup",
     ),
     output: Optional[Path] = typer.Option(
-        None, "--output", "-o", help="JSON 比对报告输出路径"
+        None, "--output", "-o", help="Output path for the JSON comparison report"
     ),
 ) -> None:
-    """对比一份 relay detect 报告与一个官方基线,输出字段级差异。"""
+    """Compare a relay detect report against an official baseline, printing field-level differences."""
     from .comparator import (
         compare,
         find_baseline_for,
@@ -489,7 +489,7 @@ def compare_cmd(
     )
 
     if not relay_report.is_file():
-        console.print(f"[red]找不到 relay 报告:[/red] {relay_report}")
+        console.print(f"[red]relay report not found:[/red] {relay_report}")
         raise typer.Exit(2)
 
     relay = load_report(relay_report)
@@ -501,15 +501,15 @@ def compare_cmd(
         found = find_baseline_for(target_model, mode, baseline_dir)
         if found is None:
             console.print(
-                f"[red]找不到基线文件:[/red] model={target_model!r}, "
-                f"mode={mode!r} 在 {baseline_dir}"
+                f"[red]baseline file not found:[/red] model={target_model!r}, "
+                f"mode={mode!r} in {baseline_dir}"
             )
             console.print(
-                "[dim]显式指定 --baseline,或先用 ./bench.sh 收集官方基线[/dim]"
+        "[dim]pass --baseline explicitly, or collect an official baseline with ./bench.sh first[/dim]"
             )
             raise typer.Exit(2)
         baseline = found
-        console.print(f"[dim]自动选择基线: {baseline}[/dim]")
+    console.print(f"[dim]baseline auto-selected: {baseline}[/dim]")
 
     baseline_data = load_report(baseline)
     cmp = compare(
@@ -525,7 +525,7 @@ def compare_cmd(
             json.dumps(cmp.to_dict(), indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        console.print(f"[dim]JSON 比对报告写入: {output}[/dim]")
+    console.print(f"[dim]JSON comparison report written to: {output}[/dim]")
 
 
 def _render_comparison(cmp) -> None:
@@ -547,7 +547,7 @@ def _render_comparison(cmp) -> None:
     b_self = (bm.get("self_reported_identity") or "").strip()
     r_self = (rm.get("self_reported_identity") or "").strip()
     if b_self or r_self:
-        panel_text += "\n\n[bold]模型自报身份对比:[/bold]"
+        panel_text += "\n\n[bold]Self-reported identity comparison:[/bold]"
         if b_self:
             panel_text += f"\n  [dim]baseline:[/dim] {_truncate(b_self, 180)}"
         if r_self:
@@ -559,7 +559,7 @@ def _render_comparison(cmp) -> None:
     new_brands = sorted(r_brands - b_brands)
     if new_brands:
         panel_text += (
-            f"\n\n[bold red]⚠ 检测到非 Anthropic 后端品牌:[/bold red] "
+            f"\n\n[bold red]⚠ non-Anthropic backend brands detected:[/bold red] "
             f"[red]{', '.join(new_brands)}[/red]"
         )
 
@@ -567,15 +567,15 @@ def _render_comparison(cmp) -> None:
         f"\n\n[{color}]{_SEVERITY_LABEL.get(cmp.overall_severity.value, '?')}[/{color}]: "
         f"{cmp.summary}"
     )
-    console.print(Panel(panel_text, title="基线对比报告", expand=False))
+    console.print(Panel(panel_text, title="Baseline Comparison Report", expand=False))
 
     table = Table(show_header=True, expand=False)
-    table.add_column("项", style="bold")
+    table.add_column("Item", style="bold")
     table.add_column("baseline", justify="right")
     table.add_column("relay", justify="right")
     table.add_column("Δ", justify="right")
-    table.add_column("级别", justify="center")
-    table.add_column("差异详情")
+    table.add_column("Severity", justify="center")
+    table.add_column("Differences")
 
     for d in cmp.detectors:
         sev = d.severity.value
@@ -639,7 +639,7 @@ def openai_validate(
     from .openai import validate_openai_payload
 
     if not response_json.is_file():
-        console.print(f"[red]找不到响应 JSON:[/red] {response_json}")
+        console.print(f"[red]response JSON not found:[/red] {response_json}")
         raise typer.Exit(2)
 
     normalized_wire_api = wire_api.strip().lower().replace("-", "_")
@@ -652,7 +652,7 @@ def openai_validate(
     try:
         payload = json.loads(response_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
-        console.print(f"[red]JSON 解析失败:[/red] {e}")
+        console.print(f"[red]JSON parse failed:[/red] {e}")
         raise typer.Exit(2)
     if not isinstance(payload, dict):
         console.print("[red]error:[/red] response JSON top-level must be an object")
@@ -670,7 +670,7 @@ def openai_validate(
             json.dumps(result.to_dict(), indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        console.print(f"[dim]JSON 校验报告写入: {output}[/dim]")
+        console.print(f"[dim]JSON validation report written to: {output}[/dim]")
 
 
 def _render_openai_validation(result) -> None:
@@ -682,17 +682,17 @@ def _render_openai_validation(result) -> None:
         f"[bold]passed[/bold]:    {result.passed}\n"
         f"[bold]fingerprints[/bold]: {result.fingerprints}"
     )
-    console.print(Panel(header, title="OpenAI 协议模板校验", expand=False))
+    console.print(Panel(header, title="OpenAI Protocol Template Validation", expand=False))
 
     if not result.issues:
-        console.print("[green]✓ 未发现协议形状问题[/green]")
+        console.print("[green]✓ no protocol shape issues found[/green]")
         return
 
     table = Table(show_header=True, expand=False)
-    table.add_column("级别", style="bold")
-    table.add_column("代码")
-    table.add_column("路径")
-    table.add_column("说明")
+    table.add_column("Severity", style="bold")
+    table.add_column("Code")
+    table.add_column("Path")
+    table.add_column("Description")
     table.add_column("actual")
     table.add_column("expected")
     for issue in result.issues:
@@ -756,7 +756,7 @@ def openai_baseline(
 
     if not api_key:
         console.print("[red]error:[/red] --api-key or OPENAI_API_KEY is required")
-        console.print("[dim]建议把 key 放到环境变量或项目 .env,不要粘贴到聊天里。[/dim]")
+        console.print("[dim]Tip: keep the key in an environment variable or the project .env — don't paste it into chats.[/dim]")
         raise typer.Exit(2)
 
     normalized_wire_api = wire_api.strip().lower().replace("-", "_")
@@ -823,7 +823,7 @@ async def _run_openai_baseline(
             json.dumps(report, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        console.print(f"[dim]OpenAI 官方 baseline 写入: {output_path}[/dim]")
+        console.print(f"[dim]official OpenAI baseline written to: {output_path}[/dim]")
 
 
 def _render_openai_baseline(report: dict) -> None:
@@ -837,7 +837,7 @@ def _render_openai_baseline(report: dict) -> None:
         f"{summary.get('passed_count')} passed\n"
         f"[bold]avg_score[/bold]: {summary.get('average_validation_score')}"
     )
-    console.print(Panel(panel_text, title="OpenAI 官方 baseline", expand=False))
+    console.print(Panel(panel_text, title="Official OpenAI Baseline", expand=False))
 
     table = Table(show_header=True, expand=False)
     table.add_column("probe", style="bold")

@@ -31,7 +31,7 @@ ID_PREFIX = "chatcmpl-"
 
 class ProtocolDetector(PassiveDetector):
     name = "protocol"
-    display_name = "协议规范性"
+    display_name = "Protocol Conformance"
     weight = 15.0
 
     def __init__(self) -> None:
@@ -80,9 +80,9 @@ class ProtocolDetector(PassiveDetector):
                 "critical_issue_count": critical_count,
                 "issues": issues[:30],
                 "evaluation_zh": (
-                    "Chat Completions 响应字段、id 前缀、finish_reason 等均符合 OpenAI 规范。"
+        "Chat Completions response fields, id prefix, finish_reason, etc. all conform to the OpenAI spec."
                     if passed
-                    else "响应不完全符合 OpenAI Chat Completions 规范,中转站可能改写了部分字段。"
+        else "The response does not fully conform to the OpenAI Chat Completions spec; the relay may have rewritten some fields."
                 ),
             },
         )
@@ -103,7 +103,7 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
         if key in response:
             checks_passed += 1
         else:
-            add_issue("critical", f"missing_{key}", f"响应缺少 {key} 字段")
+            add_issue("critical", f"missing_{key}", f"response is missing the {key} field")
 
     checks_total += 1
     response_id = response.get("id")
@@ -113,7 +113,7 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
         add_issue(
             "major",
             "bad_id_prefix",
-            f"response.id 应以 '{ID_PREFIX}' 开头,实际为 {response_id!r}",
+            f"response.id should start with '{ID_PREFIX}', got {response_id!r}",
         )
 
     checks_total += 1
@@ -124,7 +124,7 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
         add_issue(
             "major",
             "bad_object",
-            f"response.object 应为 '{ALLOWED_OBJECT}',实际为 {obj!r}",
+            f"response.object should be '{ALLOWED_OBJECT}', got {obj!r}",
         )
 
     checks_total += 1
@@ -134,7 +134,7 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
         first_choice = choices[0]
         checks_passed += 1
     else:
-        add_issue("critical", "bad_choices", "choices 不是非空数组")
+        add_issue("critical", "bad_choices", "choices is not a non-empty array")
 
     checks_total += 1
     if first_choice is not None:
@@ -145,10 +145,10 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
             add_issue(
                 "major",
                 "bad_finish_reason",
-                f"finish_reason {finish!r} 不在 OpenAI 允许的枚举里",
+            f"finish_reason {finish!r} is not in the OpenAI-allowed enum",
             )
     else:
-        add_issue("major", "bad_finish_reason", "缺少 finish_reason")
+        add_issue("major", "bad_finish_reason", "missing finish_reason")
 
     checks_total += 1
     if first_choice is not None:
@@ -159,10 +159,10 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
             add_issue(
                 "major",
                 "bad_message",
-                "choices[0].message 缺失或 role 不是 assistant",
+            "choices[0].message is missing or role is not assistant",
             )
     else:
-        add_issue("major", "bad_message", "缺少 message")
+        add_issue("major", "bad_message", "missing message")
 
     checks_total += 1
     usage = response.get("usage")
@@ -177,10 +177,10 @@ def _shape_score(response: dict[str, Any]) -> tuple[float, list[dict[str, str]]]
                 add_issue(
                     "minor",
                     f"bad_usage_{field}",
-                    f"usage.{field} 不是整数: {value!r}",
+                    f"usage.{field} is not an integer: {value!r}",
                 )
     else:
-        add_issue("major", "missing_usage", "响应缺少 usage 对象")
+        add_issue("major", "missing_usage", "response is missing the usage object")
 
     score = (checks_passed / checks_total * 100.0) if checks_total else 0.0
     return score, issues

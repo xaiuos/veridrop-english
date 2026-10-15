@@ -8,7 +8,7 @@
 
   function setOpen(open) {
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   }
 
   toggle.addEventListener('click', (e) => {
@@ -144,7 +144,7 @@
     if (key === lastKey) return; // already probed this combo
     lastKey = key;
 
-    setPill('neutral', '🔄 正在识别中转站可用模型...');
+    setPill('neutral', '🔄 Identifying models available on this relay...');
     if (inflight) inflight.abort && inflight.abort();
     const ctrl = new AbortController();
     inflight = ctrl;
@@ -158,13 +158,13 @@
       data = await r.json();
     } catch (e) {
       if (e.name === 'AbortError') return;
-      setPill('warn', '⚪ 探测失败,但不影响检测继续 — 你填的模型会被直接尝试');
+      setPill('warn', '⚪ Probe failed — detection can still continue; the model you entered will be tried directly');
       return;
     }
     if (r.status === 429) {
       // Rate limited — surface clearly and keep submit enabled so the user
       // can still proceed (they're not blocked from detection itself).
-      setPill('warn', '⚠ ' + (data.error || '探测过于频繁,稍后再试') + '(检测仍可正常提交)');
+      setPill('warn', '⚠ ' + (data.error || 'Probing too frequently — retry later') + ' (detection can still be submitted)');
       lastKey = null; // allow retry after backoff
       return;
     }
@@ -175,15 +175,15 @@
     if (!data.ok) {
       // Auth fail vs other errors — auth_ok=false is the only blocking case
       if (data.auth_ok === false) {
-        setPill('fail', '🔴 ' + (data.error || '鉴权失败'));
+        setPill('fail', '🔴 ' + (data.error || 'Authentication failed'));
       } else {
-        setPill('warn', '⚪ ' + (data.error || '探测失败') + ' — 不影响检测继续');
+        setPill('warn', '⚪ ' + (data.error || 'Probe failed') + ' — detection can still continue');
       }
       return;
     }
 
     if (!data.models_endpoint_supported) {
-      setPill('neutral', '⚪ ' + (data.note || '该中转站不暴露 /v1/models') + '(检测可正常进行)');
+      setPill('neutral', '⚪ ' + (data.note || 'This relay does not expose /v1/models') + ' (detection can proceed normally)');
       return;
     }
 
@@ -197,31 +197,31 @@
         .map((p) => ({proto: p, count: data.by_protocol[p].length, sample: data.by_protocol[p][0]}));
 
       let html =
-        '<div class="probe-headline">🟡 该中转站没有任何 ' + escapeHtml(protoLabel) + ' 模型</div>' +
-        '<div class="probe-detail">已识别 ' + total + ' 个模型,但都不属于本检测协议。</div>';
+        '<div class="probe-headline">🟡 This relay has no ' + escapeHtml(protoLabel) + ' models</div>' +
+        '<div class="probe-detail">' + total + ' models identified, but none belong to this detection protocol.</div>';
       if (others.length) {
         html += '<div class="probe-actions">';
         others.forEach((o) => {
           const label = {anthropic: 'Claude', openai: 'OpenAI', gemini: 'Gemini'}[o.proto];
           html +=
             '<button type="button" class="btn btn-ghost probe-action" data-handoff="' + o.proto + '">' +
-            '改用 ' + label + ' 协议 (' + o.count + ' 个可用)</button>';
+            'Switch to the ' + label + ' protocol (' + o.count + ' available)</button>';
         });
         html += '</div>';
       }
       setPillHtml('warn', html);
       bindHandoff();
       // Disable submit — running detection here will produce 0% report.
-      setSubmitEnabled(false, '该中转站没有 ' + protoLabel + ' 模型');
+      setSubmitEnabled(false, 'This relay has no ' + protoLabel + ' models');
       return;
     }
 
     // Happy path: at least one model matches our protocol.
     const sample = myModels.slice(0, 4).join(', ');
-    const more = myModels.length > 4 ? ` 等共 ${myModels.length} 个` : '';
+    const more = myModels.length > 4 ? ` and ${myModels.length} total` : '';
     setPillHtml(
       'ok',
-      '<div class="probe-headline">🟢 已识别 ' + total + ' 个模型,其中 ' + myModels.length + ' 个可用于本检测</div>' +
+      '<div class="probe-headline">🟢 ' + total + ' models identified, of which ' + myModels.length + ' work for this detection</div>' +
       '<div class="probe-detail">' + escapeHtml(sample) + escapeHtml(more) + '</div>'
     );
 
@@ -308,7 +308,7 @@
         baseUrlInput.value = data.base_url;
         apiKeyInput.value = data.api_key;
         const fromLabel = {anthropic: 'Claude', openai: 'OpenAI', gemini: 'Gemini'}[data.from] || data.from;
-        setPill('neutral', '🔄 已从 ' + fromLabel + ' 页面带入凭据,正在重新探测...');
+    setPill('neutral', '🔄 Credentials carried over from the ' + fromLabel + ' page — re-probing...');
         // Defer so the page paints first
         setTimeout(runProbe, 50);
       }
@@ -344,8 +344,8 @@
     // Backend returns: {code, message, model, protocol, upstream_error}
     const proto = currentProtocol();
     const recommended = (window.veridropBestByProtocol || {})[proto];
-    const dead = detail.model || '该模型';
-    const reason = detail.upstream_error || '上游拒绝';
+    const dead = detail.model || 'This model';
+    const reason = detail.upstream_error || 'Rejected upstream';
 
     errBox.innerHTML = '';
     errBox.hidden = false;
@@ -353,7 +353,7 @@
 
     const title = document.createElement('div');
     title.className = 'form-error-title';
-    title.textContent = '该模型在中转站实际不可用';
+    title.textContent = 'This model is actually unavailable on the relay';
     errBox.appendChild(title);
 
     const body = document.createElement('div');
@@ -368,7 +368,7 @@
       const swapBtn = document.createElement('button');
       swapBtn.type = 'button';
       swapBtn.className = 'btn btn-primary';
-      swapBtn.textContent = `换成 ${recommended} 重试`;
+      swapBtn.textContent = `Switch to ${recommended} and retry`;
       swapBtn.addEventListener('click', () => {
         const modelInput = document.getElementById('model');
         if (modelInput) modelInput.value = recommended;
@@ -385,8 +385,8 @@
     const forceBtn = document.createElement('button');
     forceBtn.type = 'button';
     forceBtn.className = 'btn btn-ghost';
-    forceBtn.textContent = '我知道,强制提交';
-    forceBtn.title = 'preflight 偶尔会误判(例如 max_tokens 太小被代理拒)。强制提交后,如果模型真挂了,检测会以错误结果呈现。';
+    forceBtn.textContent = 'I understand — submit anyway';
+    forceBtn.title = 'Preflight occasionally misjudges (e.g. max_tokens too small gets rejected by the proxy). If the model is truly down, the detection will surface as an error result.';
     forceBtn.addEventListener('click', () => {
       // Append a hidden force=1 field; the detect routes skip preflight when
       // it's set.
@@ -412,7 +412,7 @@
     errBox.hidden = true;
     errBox.classList.remove('form-error-rich');
     submitBtn.disabled = true;
-    submitBtn.textContent = '正在确认模型可用…';
+    submitBtn.textContent = 'Confirming model availability…';
 
     const fd = new FormData(form);
     try {
@@ -423,7 +423,7 @@
         if (detail && detail.code === 'model_not_alive') {
           renderModelDeadError(detail);
           submitBtn.disabled = false;
-          submitBtn.textContent = '开始检测';
+    submitBtn.textContent = 'Start Detection';
           return;
         }
       }
@@ -443,12 +443,12 @@
       errBox.hidden = false;
       errBox.textContent = e.message || 'Submission failed';
       submitBtn.disabled = false;
-      submitBtn.textContent = '开始检测';
+    submitBtn.textContent = 'Start Detection';
     }
   });
 })();
 
-// FAQ dual-mode toggle (通俗 / 开发者).
+    // FAQ dual-mode toggle (plain-language / developer).
 // Two <p data-mode="layperson|developer"> per question are both in DOM
 // (so search engines index both); CSS hides whichever doesn't match the
 // section's data-mode. Choice persists in localStorage so the user

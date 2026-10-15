@@ -34,8 +34,8 @@ def test_lookup_model_alias():
 
 
 def test_lookup_model_opus_4_8_registered():
-    """opus-4-8 必须在册且 thinking 支持开启,否则 thinking_signature
-    会对最新模型静默跳过(皇冠级检测失灵)。自适应思维,同 4-7。"""
+    """opus-4-8 must be registered with thinking enabled, otherwise thinking_signature
+    silently skips the newest model (crown-level detection disabled). Adaptive thinking, same as 4-7."""
     info = lookup_model("claude-opus-4-8")
     assert info is not None
     assert info.alias == "claude-opus-4-8"

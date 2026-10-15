@@ -78,9 +78,9 @@ MODELS: dict[str, ModelInfo] = {
         context_tokens=1_000_000,
         max_output_tokens=128_000,
         pdf_page_max=600,
-        # 与前一代 opus-4-7 一致:自适应思维(output_config.effort),
-        # 不走 extended(thinking.budget_tokens)。没这条 thinking_signature
-        # 对 4.8 会被 applies_to() 判 False 而跳过(皇冠级检测失灵)。
+# Same as the previous generation opus-4-7: adaptive thinking (output_config.effort),
+# not extended (thinking.budget_tokens). Without this entry thinking_signature
+# would be judged False by applies_to() and skipped for 4.8 (crown-level detection disabled).
         supports_extended_thinking=False,
         supports_adaptive_thinking=True,
         new_tokenizer=True,

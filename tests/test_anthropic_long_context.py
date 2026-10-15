@@ -50,7 +50,7 @@ async def test_anthropic_long_context_skips_when_not_opted_in():
     )
     result = await det.run(client, "claude-haiku-4-5")
     assert result.status == "skip"
-    assert "可选" in result.details["skip_reason"]
+    assert "optional" in result.details["skip_reason"]
 
 
 @pytest.mark.asyncio

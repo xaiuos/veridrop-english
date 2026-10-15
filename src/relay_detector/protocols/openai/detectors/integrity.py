@@ -13,7 +13,7 @@ PROMPT = "Reply with exactly: veridrop stream check"
 
 class IntegrityDetector(ActiveDetector):
     name = "integrity"
-    display_name = "流式一致性"
+    display_name = "Streaming Consistency"
     weight = 15.0
 
     async def run(self, client, model: str) -> DetectorResult:

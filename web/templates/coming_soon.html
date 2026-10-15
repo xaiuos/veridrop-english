@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}{{ name }} 中转站检测 · 即将上线 | Veridrop{% endblock %}
-{% block description %}{{ name }} 中转站检测正在准备中。留下邮箱,上线后第一时间通知你。{% endblock %}
-{% block og_title %}{{ name }} 中转站检测 · Veridrop{% endblock %}
+{% block title %}{{ name }} Relay Detection · Coming Soon | Veridrop{% endblock %}
+{% block description %}{{ name }} relay detection is in preparation. Leave your email and be the first to know when it launches.{% endblock %}
+{% block og_title %}{{ name }} Relay Detection · Veridrop{% endblock %}
 {% block og_description %}{{ tier }} · {{ body }}{% endblock %}
 
 {% block content %}
@@ -22,20 +22,20 @@
   <form class="wishlist-form" id="wishlist-form">
     <input type="hidden" name="protocol" value="{{ protocol }}" />
     <div class="field">
-      <label for="email">上线通知邮箱</label>
+      <label for="email">Email for launch notification</label>
       <input type="email" id="email" name="email" required placeholder="you@example.com" />
-      <p class="hint">邮箱仅用于 {{ name }} 检测上线通知,不与第三方共享,每封通知邮件包含退订方式。</p>
+      <p class="hint">Your email is used only for the {{ name }} detection launch notification, never shared with third parties, and every notification email includes an unsubscribe link.</p>
     </div>
-    <button class="btn btn-primary" id="wishlist-btn" type="submit">通知我</button>
+    <button class="btn btn-primary" id="wishlist-btn" type="submit">Notify me</button>
     <p class="form-error" id="wishlist-error" hidden></p>
-    <p class="form-success" id="wishlist-success" hidden>已记录,上线后会通知你。</p>
+    <p class="form-success" id="wishlist-success" hidden>Recorded — we'll notify you when it launches.</p>
   </form>
 </section>
 
 <section class="hub-note">
-  <h2>先检测 Claude</h2>
-  <p>Claude 独立检测已上线,可直接提交中转站 base_url 和 API key 生成报告。</p>
-  <a class="btn btn-ghost" href="/claude">前往 Claude 检测</a>
+  <h2>Detect Claude in the meantime</h2>
+  <p>Standalone Claude detection is already live — submit a relay base_url and API key to generate a report right now.</p>
+  <a class="btn btn-ghost" href="/claude">Go to Claude Detection</a>
 </section>
 
 <script>
@@ -54,13 +54,13 @@
     try {
       const r = await fetch('/api/wishlist', {method: 'POST', body: fd});
       if (!r.ok) {
-        const j = await r.json().catch(() => ({detail: '提交失败'}));
-        throw new Error(j.detail || '提交失败');
+        const j = await r.json().catch(() => ({detail: 'Submission failed'}));
+        throw new Error(j.detail || 'Submission failed');
       }
       form.reset();
       ok.hidden = false;
     } catch (e) {
-      err.textContent = e.message || '提交失败';
+      err.textContent = e.message || 'Submission failed';
       err.hidden = false;
     } finally {
       btn.disabled = false;

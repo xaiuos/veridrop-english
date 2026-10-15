@@ -55,7 +55,7 @@ def _adaptive_effort_for_model(model: str) -> str:
 
 class ThinkingSignatureDetector(ActiveDetector):
     name = "thinking_signature"
-    display_name = "思维签名验证"
+    display_name = "Thinking Signature Verification"
     weight = 25.0
 
     def applies_to(self, model: str) -> bool:

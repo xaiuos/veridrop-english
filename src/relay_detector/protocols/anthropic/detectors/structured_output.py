@@ -44,7 +44,7 @@ VALID_CALLERS = {"direct", "code_execution_20250825", "code_execution_20260120"}
 
 class StructuredOutputDetector(ActiveDetector):
     name = "structured_output"
-    display_name = "结构化输出"
+    display_name = "Structured Output"
     weight = 12.0
 
     async def run(self, client, model: str) -> DetectorResult:

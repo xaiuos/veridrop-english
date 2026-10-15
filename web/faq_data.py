@@ -7,7 +7,7 @@ Authoring rules (see docs/SEO_AI_GEO_PLAN.md §3.2 for why):
 
 * Each answer is **definition-first**: state the concrete answer in the
   first sentence, then expand with specifics or numbers.
-* Keep answers ≤ ~280 Chinese chars — long enough to give an LLM something
+* Keep answers ≤ ~280 Chinese chars / ~200 English words — long enough to give an LLM something
   to cite, short enough that the FAQPage schema doesn't bloat.
 * Use real numbers (token counts, percentages, signature lengths) wherever
   possible — pages with concrete numbers get cited 33% more by AI engines.
@@ -40,381 +40,387 @@ class FAQCategory:
 FAQ_CATEGORIES: tuple[FAQCategory, ...] = (
     FAQCategory(
         id="basics",
-        title="中转站基础",
+        title="Relay Basics",
         intro=(
-            "「AI API 中转站」是第三方搭建的 API 转发服务,把你的请求代理给 OpenAI / Anthropic / "
-            "Google 官方,再把响应返回给你。中转站千差万别 — 有的 1:1 透传,有的会改写字段、"
-            "替换模型、注入 system prompt。这一组问题先讲清楚什么是中转站、为什么需要、风险在哪。"
+            "An \"AI API relay\" is a third-party API forwarding service that proxies your requests to "
+            "the official OpenAI / Anthropic / Google endpoints and returns the responses to you. "
+            "Relays vary wildly — some forward traffic 1:1, while others rewrite fields, swap models, "
+            "or inject system prompts. This set of questions explains what relays are, why people use them, "
+            "and where the risks lie."
         ),
         entries=(
             FAQEntry(
                 "what-is-relay",
-                "什么是 AI API 中转站?",
-                "中转站(relay,又叫「镜像」「代理」)是第三方搭建的 API 转发服务,"
-                "把你的请求转给 OpenAI / Anthropic / Google 官方,再把响应原样返回给你。"
-                "常见出现原因:国内无法直连官方域名、便宜的批发价、统一一个接口调多家模型。",
+                "What is an AI API relay?",
+                "A relay (also called a \"mirror\" or \"proxy\") is a third-party API forwarding service "
+                "that sends your requests to the official OpenAI / Anthropic / Google endpoints and "
+                "returns the responses to you as-is. Common reasons they exist: local networks cannot reach "
+                "the official domains directly, cheaper wholesale pricing, and one unified interface for many models.",
             ),
             FAQEntry(
                 "why-use-relay",
-                "为什么需要中转站?直接用官方不行吗?",
-                "三个常见原因:① 国内访问 anthropic.com / openai.com 需要科学上网;"
-                "② 部分中转站把多家厂商的批发额度打包零售,价格比官方低 30-70%;"
-                "③ 一些中转站把 Claude / GPT / Gemini 全统一成 OpenAI 兼容接口,代码只用维护一套。",
+                "Why do people use relays? Isn't the official API enough?",
+                "Three common reasons: ① accessing anthropic.com / openai.com requires a VPN in some regions; "
+                "② some relays repackage wholesale quotas from multiple vendors at retail, 30-70% cheaper than official; "
+                "③ some relays unify Claude / GPT / Gemini behind a single OpenAI-compatible interface, so you maintain only one codebase.",
             ),
             FAQEntry(
                 "relay-vs-official",
-                "中转站和官方 API 有什么区别?",
-                "官方 API 字段、签名、错误格式都是确定的;中转站之间差异巨大 — "
-                "有的 1:1 透传,有的会改写 usage 字段、剥离 thinking 块、用别的模型替换、"
-                "甚至注入额外 system prompt。Veridrop 检测的就是这种「中间到底动了什么」。",
+                "What's the difference between a relay and the official API?",
+                "Official APIs have deterministic fields, signatures, and error formats; relays differ enormously — "
+                "some forward 1:1, others rewrite usage fields, strip thinking blocks, substitute different models, "
+                "or even inject extra system prompts. What Veridrop detects is exactly \"what was tampered with in the middle\".",
             ),
             FAQEntry(
                 "relay-legal",
-                "中转站合法吗?用了会不会出问题?",
-                "法律上灰色地带,看具体合作模式。真正的实务风险有三:"
-                "① <strong>跑路风险</strong> — 中转站随时可能停服、涨价、卷款消失,大额充值要慎重;"
-                "② <strong>模型响应跟官方不一致</strong> — 中转站可能在中间动手脚"
-                "(替换模型、剥离能力、虚报 token),影响你下游业务的稳定性;"
-                "③ <strong>prompt 内容被记录</strong> — 涉及商业机密 / 用户数据的对话最好避开"
-                "来路不明的中转站。建议小额测试,选信誉好的运营方,大额场景考虑直连官方。",
+                "Are relays legal? Will using one cause problems?",
+                "Legally a gray area that depends on the partnership model. The real practical risks are three: "
+                "① <strong>runaway risk</strong> — a relay can shut down, raise prices, or vanish with your balance at any time; "
+                "think twice before topping up large amounts. "
+                "② <strong>model responses inconsistent with official</strong> — the relay may tamper in the middle "
+                "(model substitution, capability stripping, inflated token counts), affecting your downstream business stability. "
+                "③ <strong>prompt content being logged</strong> — conversations involving trade secrets or user data are best kept "
+                "away from relays of unknown provenance. Start small, pick reputable operators, and go direct to the official API for high-stakes workloads.",
             ),
             FAQEntry(
                 "relay-steal-key",
-                "用中转站的 API key 有什么风险?",
-                "Veridrop 实测过很多家中转站,常见的坑有 5 种(都见过真实案例):"
-                "① <strong>偷偷换成别的模型</strong> — 你买的是 GPT,实际给你跑的可能是 Claude 或其他"
-                "更便宜的模型。表面上看不出来,但写出来的内容风格、思路、解题习惯都不对,"
-                "用来做正经事很容易翻车。"
-                "② <strong>高级功能用不了</strong> — 比如让模型严格按指定格式回话、"
-                "让它读 PDF、调用工具这些进阶能力,在被「偷换」的中转站上经常失灵 — "
-                "因为后台换上来的便宜模型根本不会这一套。"
-                "③ <strong>计费数字不可信</strong> — 同样一句话问几次,每次扣的钱都不一样;"
-                "有的中转站干脆不告诉你这次用了多少 token,你根本对不上账。"
-                "充值的钱很可能比官方贵不少,却没有任何凭证可查。"
-                "④ <strong>菜单上的模型实际没货</strong> — 它对外宣称支持几十个模型,"
-                "你真去用其中一些,直接报「没有这个模型」。Veridrop 在你提交检测前会先帮你"
-                "试一下,免得你白等半分钟拿到一份全 0 分的报告。"
-                "⑤ <strong>规则说变就变</strong> — 同一把 key,今天用得好好的,"
-                "第二天可能突然提示「需要升级套餐」「分组失效」甚至直接封号。"
-                "中转站后台规则可以无通知调整,大额充值之前最好先小额试用,"
-                "并跑一次 Veridrop 看看实际表现。",
+                "What are the risks of using a relay's API key?",
+                "Veridrop has tested many relays in practice; there are 5 common pitfalls (all with real observed cases): "
+                "① <strong>silent model substitution</strong> — you pay for GPT but what actually runs may be Claude or another "
+                "cheaper model. It's invisible on the surface, but the writing style, reasoning, and problem-solving habits are off, "
+                "and real work easily goes wrong. "
+                "② <strong>advanced features broken</strong> — things like strict formatted output, PDF reading, and tool calling "
+                "frequently fail on \"swapped\" relays — because the cheap model swapped in behind the scenes simply can't do them. "
+                "③ <strong>billing numbers you can't trust</strong> — ask the same question a few times and the charge differs each time; "
+                "some relays never tell you how many tokens were used, so you can't reconcile the account at all. "
+                "Your top-up may well cost more than official with no receipts to check. "
+                "④ <strong>models on the menu that are out of stock</strong> — the relay claims dozens of models, "
+                "but try some of them and you get \"model not found\". Veridrop tests this for you before you submit a detection, "
+                "so you don't wait half a minute only to get an all-zeros report. "
+                "⑤ <strong>rules changed without notice</strong> — the same key works fine today, and tomorrow suddenly demands "
+                "\"upgrade your plan\", \"group expired\", or gets banned outright. Relay backend rules can change without any notice, "
+                "so try a small amount first and run Veridrop once to see actual behavior before any large top-up.",
             ),
         ),
     ),
     FAQCategory(
         id="authenticity",
-        title="真伪识别",
+        title="Authenticity",
         intro=(
-            "中转站「假货」是行业最大的痛点 — 你以为在用 Claude,实际可能跑的是 Kiro / Amazon Q;"
-            "你以为在用 GPT-4o,实际后端是 Claude Haiku。这一组问题讲清楚作假手段和检测方法。"
+            "Relay \"counterfeits\" are the industry's biggest pain point — you think you're using Claude while Kiro / Amazon Q "
+            "actually runs behind it; you think you're using GPT-4o while the backend is Claude Haiku. "
+            "This set of questions explains the fakery techniques and how to detect them."
         ),
         entries=(
             FAQEntry(
                 "verify-authentic",
-                "怎么知道我用的是真 Claude / GPT / Gemini 而不是替身?",
-                "三个方向:① 协议字段(id 前缀、object、finish_reason 是否符合官方规范);"
-                "② 能力指纹(thinking signature 加密签名、PDF 多模态、function calling shape);"
-                "③ 用量字段(usage 里有没有混入异源痕迹如 claude_cache_creation_*)。"
-                "Veridrop 把这三类合成 7-10 项检测。",
+                "How do I know I'm getting real Claude / GPT / Gemini and not a stand-in?",
+                "Three directions: ① protocol fields (whether id prefix, object, finish_reason conform to official specs); "
+                "② capability fingerprints (thinking signature cryptographic signatures, PDF multimodal, function calling shape); "
+                "③ usage fields (whether usage contains foreign-origin traces like claude_cache_creation_*). "
+                "Veridrop combines these three into 7-10 detections.",
             ),
             FAQEntry(
                 "common-fake-tactics",
-                "中转站常见的「作假」手段有哪些?",
-                "5 种常见:① 用 Kiro / Amazon Q / Bedrock 跑 Claude 替身;"
-                "② 用 Claude 后端跑 GPT 请求(usage 字段会暴露 claude_* 残留);"
-                "③ 把 GPT-4o 偷换成 GPT-4o-mini 省成本;④ 剥离 thinking 块、PDF 多模态等高级能力;"
-                "⑤ 注入额外 system prompt 改写身份回答。",
+                "What are the common \"fakery\" tactics relays use?",
+                "5 common ones: ① running Claude stand-ins via Kiro / Amazon Q / Bedrock; "
+                "② routing GPT requests to a Claude backend (usage fields expose claude_* residue); "
+                "③ quietly swapping GPT-4o for GPT-4o-mini to save cost; ④ stripping advanced capabilities like thinking blocks and PDF multimodal; "
+                "⑤ injecting extra system prompts to rewrite identity answers.",
             ),
             FAQEntry(
                 "ask-who-are-you",
-                "直接问「你是谁」能验证模型真假吗?",
-                "不能。现代模型都被训练得知道怎么回答身份问题,而且中转站可以注入 system prompt "
-                "让模型说「我是 Claude」。Veridrop 把「身份一致性」检测的权重设为 5%,"
-                "只作为最弱的辅助信号 — 真正可信的是 thinking signature 这种加密级指标。",
+                "Can I just ask \"who are you\" to verify the model?",
+                "No. Modern models are trained to answer identity questions properly, and relays can inject a system prompt "
+                "to make the model say \"I am Claude\". Veridrop assigns only 5% weight to the \"identity consistency\" detection, "
+                "treating it as the weakest auxiliary signal — what's truly trustworthy is a cryptographic-grade metric like thinking signature.",
             ),
             FAQEntry(
                 "kiro-amazon-q",
-                "Kiro / Amazon Q 假冒 Claude 怎么识破?",
-                "Kiro 和 Amazon Q 是 Amazon 的 Claude 替身网关,响应没有 Claude thinking signature "
-                "(它们走的是 AWS Bedrock 的简化接口,不返回服务端签名)。"
-                "Veridrop 在 thinking_signature 检测上会直接判 0 分,fail 整体检测。",
+                "How do I expose Kiro / Amazon Q impersonating Claude?",
+                "Kiro and Amazon Q are Amazon's Claude stand-in gateways; their responses carry no Claude thinking signature "
+                "(they use AWS Bedrock's simplified interface, which does not return server-side signatures). "
+                "Veridrop's thinking_signature detection scores them 0 outright and fails the overall detection.",
             ),
             FAQEntry(
                 "gpt-becomes-claude",
-                "中转站把 GPT 请求转给 Claude 后端,怎么发现?",
-                "看响应的 usage 字段。原生 OpenAI 只有 prompt_tokens / completion_tokens / total_tokens "
-                "三个键。如果出现 claude_cache_creation_5_m_tokens、usage_source: anthropic 等字段,"
-                "基本可以判定中转站在做协议转换。Veridrop 把这种指纹标记为 critical 级别。",
+                "How do I catch a relay routing GPT requests to a Claude backend?",
+                "Look at the response's usage field. Native OpenAI has only prompt_tokens / completion_tokens / total_tokens. "
+                "If fields like claude_cache_creation_5_m_tokens or usage_source: anthropic appear, "
+                "you can essentially conclude the relay is doing protocol conversion. Veridrop flags such fingerprints as critical severity.",
             ),
         ),
     ),
     FAQCategory(
         id="claude",
-        title="Claude API 中转站",
+        title="Claude API Relays",
         intro=(
-            "Claude 是 Veridrop 检测最深入的协议 — 因为 Claude 有 thinking signature 这种加密级"
-            "可验证指标,业内目前只有 Veridrop 利用了这个信号。"
+            "Claude is the protocol Veridrop detects most deeply — because Claude has a cryptographic-grade "
+            "verifiable metric in the thinking signature, and Veridrop is currently the only one in the industry using this signal."
         ),
         entries=(
             FAQEntry(
                 "thinking-signature",
-                "thinking signature 是什么?为什么是真伪验证的金标准?",
-                "thinking signature 是 Claude 启用扩展思考时,响应里 signature 字段返回的"
-                "服务端加密产物,长度 500-2000 字符。这个签名由 Anthropic 服务端生成,"
-                "带加密验证 — 中转站理论上无法伪造。Veridrop 把它作为 25% 权重的核心检测项。",
+                "What is a thinking signature? Why is it the gold standard for authenticity verification?",
+                "A thinking signature is the server-side cryptographic artifact returned in the signature field "
+                "of Claude responses when extended thinking is enabled, 500-2000 characters long. It is generated "
+                "by Anthropic's servers and cryptographically verifiable — relays theoretically cannot forge it. "
+                "Veridrop treats it as a core detection with 25% weight.",
             ),
             FAQEntry(
                 "claude-code-relay",
-                "Claude code 中转站怎么挑?",
-                "关键看 4 点:① 跑一次 Veridrop 看 thinking signature 是否拿到 100 分;"
-                "② 看 usage 里有没有 claude_* 之外的异源字段;"
-                "③ 看 stream / non-stream 一致性(中转站常常在两条路径上做不同处理);"
-                "④ 看消息 id 是否符合 msg_ / toolu_ / srvtoolu_ 前缀规范。",
+                "How do I choose a Claude Code relay?",
+                "Four key things: ① run Veridrop once and check whether thinking signature scores 100; "
+                "② check whether usage contains foreign-origin fields beyond claude_*; "
+                "③ check stream / non-stream consistency (relays often handle the two paths differently); "
+                "④ check whether message ids follow the msg_ / toolu_ / srvtoolu_ prefix spec.",
             ),
             FAQEntry(
                 "claude-detector-coverage",
-                "Veridrop 的 Claude 检测覆盖哪些维度?",
-                "11 项,按权重:thinking signature (25%) > behavioral signature (15%) > "
-                "structured output (12%) > consistency / knowledge / token usage (各 10%) > pdf (8%) > "
-                "identity / protocol / integrity / message_id (各 5%)。"
-                "standard 模式跑 9 项 ~45 秒,full 模式跑全 11 项 ~75 秒。",
+                "Which dimensions does Veridrop's Claude detection cover?",
+                "11 items, by weight: thinking signature (25%) > behavioral signature (15%) > "
+                "structured output (12%) > consistency / knowledge / token usage (10% each) > pdf (8%) > "
+                "identity / protocol / integrity / message_id (5% each). "
+                "standard mode runs 9 items in ~45 seconds; full mode runs all 11 in ~75 seconds.",
             ),
             FAQEntry(
                 "claude-stream-no-thinking",
-                "Claude 中转站 stream 模式没返回 thinking 怎么回事?",
-                "这是 Claude Opus 4.7 已知的 API drift — adaptive thinking + streaming + summarized "
-                "的组合下,SSE 流里不出现 thinking 块(non-stream 正常)。"
-                "Veridrop 的 thinking_signature detector 已经针对这个切到非流式,确保检测可靠。",
+                "Why does a Claude relay return no thinking in stream mode?",
+                "This is a known API drift in Claude Opus 4.7 — with the adaptive thinking + streaming + summarized "
+                "combination, no thinking block appears in the SSE stream (non-stream works normally). "
+                "Veridrop's thinking_signature detector has switched to non-streaming for this case, ensuring reliable detection.",
             ),
             FAQEntry(
                 "claude-cost",
-                "检测时为什么要消耗 token?成本多少?",
-                "检测发真请求,每次 standard 模式约 12 个 API 调用,token 总消耗 ~3000-5000 "
-                "(取决于 thinking 是否触发)。按 Haiku 价格 ~$0.012,Sonnet ~$0.05,"
-                "Opus ~$0.20。Veridrop 自己不收费 — 你付的是上游 API 的真实 token 钱。",
+                "Why does detection consume tokens? How much does it cost?",
+                "Detection sends real requests — roughly 12 API calls per standard run, ~3000-5000 total tokens "
+                "(depending on whether thinking is triggered). At Haiku prices that's ~$0.012, Sonnet ~$0.05, "
+                "Opus ~$0.20. Veridrop itself charges nothing — you pay the real token costs to the upstream API.",
             ),
             FAQEntry(
                 "claude-zero-score",
-                "检测出 0 分是不是这家中转站完全没用?",
-                "看具体情况。常见 0 分原因:① API key 失效或额度耗尽(检测无效 banner 会提示);"
-                "② 中转站不支持你选的模型(preflight 会提前 422 拒绝);③ 真的是非常垃圾的中转站。"
-                "看每项 detector 的 details 而不是只看总分。",
+                "Does a 0 score mean the relay is completely useless?",
+                "It depends. Common zero-score causes: ① the API key is invalid or the quota is exhausted (an invalid-detection banner will say so); "
+                "② the relay doesn't support the model you picked (preflight rejects it early with a 422); ③ the relay is genuinely terrible. "
+                "Read each detector's details rather than only the total score.",
             ),
         ),
     ),
     FAQCategory(
         id="openai",
-        title="OpenAI 中转站",
+        title="OpenAI Relays",
         intro=(
-            "OpenAI 协议没有像 thinking signature 这样的加密级指标,Veridrop 在 OpenAI 上主要做"
-            "「协议合规 + 适配层指纹识别」 — 抓中转站用 Anthropic / Google 后端伪装 GPT 的痕迹。"
+            "The OpenAI protocol has no cryptographic-grade metric like the thinking signature, so Veridrop focuses on "
+            "\"protocol conformance + adapter-layer fingerprinting\" on OpenAI — catching traces of relays disguising "
+            "Anthropic / Google backends as GPT."
         ),
         entries=(
             FAQEntry(
                 "openai-fake-evidence",
-                "OpenAI 中转站把 GPT 偷换成 Claude 有什么直接证据?",
-                "响应的 usage 字段是最直接的证据。真原生 OpenAI 只有 prompt_tokens / "
-                "completion_tokens / total_tokens。如果发现 claude_cache_creation_5_m_tokens、"
-                "usage_source: anthropic、或 input_tokens / output_tokens(Anthropic 命名),"
-                "基本可以判定中转站在协议转换。Veridrop 标为 critical,直接拒绝该项 detector。",
+                "What's the hard evidence that an OpenAI relay swapped GPT for Claude?",
+                "The response's usage field is the most direct evidence. Truly native OpenAI has only prompt_tokens / "
+                "completion_tokens / total_tokens. If you find claude_cache_creation_5_m_tokens, "
+                "usage_source: anthropic, or input_tokens / output_tokens (Anthropic naming), "
+                "you can essentially conclude the relay is doing protocol conversion. Veridrop marks this critical and fails the detector outright.",
             ),
             FAQEntry(
                 "openai-75-marginal",
-                "我的 GPT-4o 检测出 75 分,verdict 是 marginal,怎么解读?",
-                "75 分本身在「通过」区间,但如果有任何 critical 级别的 issues "
-                "(尤其 protocol detector 报多个 critical),Veridrop 会把 verdict 砍到 marginal — "
-                "圆圈变黄、提示「存在风险」。这通常意味着接口能用但中转站在做协议转换,"
-                "实际跑的可能不是真的 GPT 模型。",
+                "My GPT-4o scored 75 but the verdict is marginal — how should I read that?",
+                "75 falls in the \"pass\" band on its own, but if there are any critical-severity issues "
+                "(especially the protocol detector reporting multiple criticals), Veridrop cuts the verdict down to marginal — "
+                "the ring turns yellow with an \"at risk\" notice. This usually means the interface works but the relay is doing "
+                "protocol conversion, and what actually runs may not be a real GPT model.",
             ),
             FAQEntry(
                 "openai-strict-json",
-                "response_format=json_schema strict 不生效是什么意思?",
-                "OpenAI strict 模式应该返回纯 JSON,不能包 Markdown 代码块。"
-                "如果返回 ```json {...} ``` 格式,有两种可能:① 中转站没透传 response_format 参数;"
-                "② 透传了但底层模型(很可能不是 GPT)不理解 strict 模式。"
-                "Veridrop 通过 markdown_json_seen 标志区分这两种情况。",
+                "What does it mean when response_format=json_schema strict doesn't take effect?",
+                "OpenAI strict mode should return pure JSON, not wrapped in a Markdown code block. "
+                "If the response comes back as ```json {...} ```, there are two possibilities: ① the relay didn't forward the response_format parameter; "
+                "② it was forwarded "
+                "but the underlying model (very likely not GPT) doesn't understand strict mode. "
+                "Veridrop distinguishes the two cases via the markdown_json_seen flag.",
             ),
             FAQEntry(
                 "openai-model-mismatch",
-                "我用的中转站 model 字段返回 gpt-4o,但响应明显不像 GPT,怎么办?",
-                "model 字段只是字符串,中转站可以填任何值。真伪要看其他指标:"
-                "① Veridrop 协议规范性 detector 会扫 usage 字段指纹;"
-                "② 行为差异(GPT 偏简洁,Claude 偏礼貌啰嗦);"
-                "③ 多次调用的 token 数 CV(模型一致性 detector)。",
+                "My relay's model field returns gpt-4o but the responses clearly don't look like GPT — what now?",
+                "The model field is just a string; a relay can fill in anything. Authenticity has to come from other metrics: "
+                "① Veridrop's protocol conformance detector scans usage-field fingerprints; "
+                "② behavioral differences (GPT is terse, Claude is more polite and verbose); "
+                "③ token-count CV across repeated calls (the model consistency detector).",
             ),
             FAQEntry(
                 "openai-no-models",
-                "OpenAI 中转站测出来 0 个模型可用怎么办?",
-                "Veridrop 的预探测会列出该 key 在中转站上有多少模型属于本协议。"
-                "如果当前页是 OpenAI 但 0 个 GPT 模型,会显示一个黄色卡片提示"
-                "「该 key 在此中转站没有 GPT 模型,但有 X 个 Claude 模型 / Y 个 Gemini 模型 → "
-                "一键跳转测那边」。",
+                "What if an OpenAI relay shows 0 usable models?",
+                "Veridrop's pre-probe lists how many of the key's models on the relay belong to this protocol. "
+                "If the current page is OpenAI but there are 0 GPT models, a yellow card is shown with a notice"
+                "\"This key has no GPT models on this relay, but has X Claude models / Y Gemini models → "
+                "jump over and test those in one click\".",
             ),
         ),
     ),
     FAQCategory(
         id="gemini",
-        title="Gemini API 中转站",
+        title="Gemini API Relays",
         intro=(
-            "Veridrop 的 Gemini 检测只走 OpenAI 兼容路径(POST /chat/completions),"
-            "因为 99% 的第三方 Gemini 中转站都用这条。Gemini 3 系列默认开 thinking,"
-            "对 max_tokens 设置和 token 用量统计有特殊要求。"
+            "Veridrop's Gemini detection only uses the OpenAI-compatible path (POST /chat/completions), "
+            "because 99% of third-party Gemini relays use exactly that. The Gemini 3 series enables thinking by default, "
+            "which places special requirements on max_tokens settings and token usage accounting."
         ),
         entries=(
             FAQEntry(
                 "gemini-model-not-found",
-                "为什么 Gemini API 中转站经常 model_not_found?",
-                "三种可能:① 中转站只代理部分 Gemini 模型(很多中转站只有 3.x preview 系列,没有 2.5);"
-                "② 模型名拼写差异(gemini-2.5-flash vs models/gemini-2.5-flash);③ 模型已下架。"
-                "Veridrop 提交前会做 preflight,500ms 内识别死模型并给出可用列表替代。",
+                "Why do Gemini relays so often return model_not_found?",
+                "Three possibilities: ① the relay only proxies part of the Gemini lineup (many relays carry only the 3.x preview series, not 2.5); "
+                "② model-name spelling differences (gemini-2.5-flash vs models/gemini-2.5-flash); ③ the model has been retired. "
+                "Veridrop runs a preflight before submission, identifying dead models within 500ms and offering the usable list instead.",
             ),
             FAQEntry(
                 "gemini-thinking-default",
-                "Gemini 3.x preview 检测时 max_completion_tokens 应该填多少?",
-                "至少 64,推荐 128+。Gemini 3 默认开 thinking,会消耗 30-60 reasoning_tokens 才输出文本。"
-                "如果 max 太小(< 32),thinking 占满后没空间出文本,响应就是空字符串 + "
-                "finish_reason=length。Veridrop 的 detector 已经把 max 调到 64-384。",
+                "What should max_completion_tokens be when testing Gemini 3.x preview?",
+                "At least 64; 128+ recommended. Gemini 3 has thinking on by default and burns 30-60 reasoning_tokens before any text. "
+                "If max is too small (< 32), thinking fills the budget with no room for text, and the response is an empty string plus "
+                "finish_reason=length. Veridrop's detector already sets max to 64-384.",
             ),
             FAQEntry(
                 "gemini-no-native",
-                "Veridrop 为什么不支持 Gemini 原生 /v1beta/models/X:generateContent 路径?",
-                "99% 的第三方 Gemini 中转站只暴露 OpenAI 兼容协议,Google 官方也提供 OpenAI 兼容"
-                "端点 /v1beta/openai。维护两套独立的检测逻辑成本高且容易引入翻译层导致结果失真,"
-                "所以 Veridrop 集中在 OpenAI 兼容路径上做透。",
+                "Why doesn't Veridrop support the native Gemini /v1beta/models/X:generateContent path?",
+                "99% of third-party Gemini relays expose only the OpenAI-compatible protocol, and Google's official side also offers "
+                "the OpenAI-compatible endpoint /v1beta/openai. Maintaining two independent detection logic sets is costly and easily "
+                "introduces a translation layer that distorts results, so Veridrop concentrates on doing the OpenAI-compatible path thoroughly.",
             ),
             FAQEntry(
                 "gemini-pick",
-                "Gemini 中转站怎么挑?",
-                "三档:① 必须支持 gemini-2.5-flash 或 gemini-3-flash-preview(2026 stable);"
-                "② Veridrop 上跑出 protocol 检测 ≥ 80;"
-                "③ usage 字段没有 gemini_* 之外的异源残留(意味着没在转协议)。"
-                "Veridrop 自动按推荐顺序排序中转站的模型列表。",
+                "How do I pick a Gemini relay?",
+                "Three tiers: ① must support gemini-2.5-flash or gemini-3-flash-preview (2026 stable); "
+                "② scores ≥ 80 on Veridrop's protocol detection; "
+                "③ no foreign-origin residue in the usage field beyond gemini_* (meaning no protocol conversion). "
+                "Veridrop automatically sorts the relay's model list in recommended order.",
             ),
             FAQEntry(
                 "gemini-google-official",
-                "Google 官方 Gemini API 也能用 Veridrop 测吗?",
-                "可以。base_url 填 https://generativelanguage.googleapis.com/v1beta/openai,"
-                "api_key 用 Google AI Studio 申请的 AIza... key。Google 官方端点应该全 7 项 100 分,"
-                "可作为基线对比第三方中转站。",
+                "Can Veridrop test Google's official Gemini API too?",
+                "Yes. Set base_url to https://generativelanguage.googleapis.com/v1beta/openai "
+                "and use the AIza... key from Google AI Studio as the api_key. The official Google endpoint should score 100 on all 7 items, "
+                "and can serve as a baseline for comparing third-party relays.",
             ),
         ),
     ),
     FAQCategory(
         id="veridrop",
-        title="Veridrop 工具使用",
-        intro="工具本身的使用、报告解读、自托管等问题。",
+        title="Using Veridrop",
+        intro="Questions about the tool itself: usage, reading reports, self-hosting, and more.",
         entries=(
             FAQEntry(
                 "how-to-use",
-                "Veridrop 怎么用?最简流程?",
-                "三步:① 打开 veridrop.org/claude(或 /openai、/gemini);"
-                "② 填中转站 base_url + api_key,选模型(下拉自动列出该 key 在该中转站可用的模型);"
-                "③ 点「开始检测」,30-60 秒拿到报告。报告 URL 永久可分享(/r/{job_id}),也能下载 JPG。",
+                "How do I use Veridrop? What's the minimal flow?",
+                "Three steps: ① open veridrop.org/claude (or /openai, /gemini); "
+                "② enter the relay's base_url + api_key and pick a model (the dropdown auto-lists the models available to that key on that relay); "
+                "③ click \"Start detection\" and get the report in 30-60 seconds. Report URLs are permanently shareable (/r/{job_id}), and a JPG can be downloaded.",
             ),
             FAQEntry(
                 "modes-difference",
-                "standard / quick / full 三档模式有什么区别?",
-                "quick (~15s, 3-5 项) 适合快速摸排;standard (~40s, 7-8 项) 是默认推荐;"
-                "full (~70s, 全 10 项) 是完整检测,推荐拿来跟官方基线 1:1 对比。"
-                "所有模式都会跑 thinking signature 这种核心项。",
+                "What's the difference between the standard / quick / full modes?",
+                "quick (~15s, 3-5 items) is for fast triage; standard (~40s, 7-8 items) is the recommended default; "
+                "full (~70s, all 10 items) is the complete detection, recommended for 1:1 comparison against the official baseline. "
+                "Every mode runs core items like the thinking signature.",
             ),
             FAQEntry(
                 "how-to-read-score",
-                "报告分数怎么解读?",
-                "总分加权:≥85 优秀(绿)/ 70-84 通过(浅绿)/ 50-69 marginal(黄)/ <50 未达标(红)。"
-                "但任意 detector 报 critical 级 issue,verdict 会被砍到 marginal(圆圈变黄)— "
-                "即使分数够 70 也不绿。点每项 detector 看 details 里的 sub_checks 找扣分原因。",
+                "How do I read the report score?",
+                "Weighted total: ≥85 excellent (green) / 70-84 pass (light green) / 50-69 marginal (yellow) / <50 failed (red). "
+                "But any detector reporting a critical-severity issue cuts the verdict down to marginal (yellow ring) — "
+                "even a 70+ score stays non-green. Open each detector's details and sub_checks to find what lost points.",
             ),
             FAQEntry(
                 "report-link-public",
-                "检测报告链接 /r/xxx 谁能看到?",
-                "任何人拿到链接都能看(匿名、不加密)。报告里不含你的 API key 明文,"
-                "只有脱敏形式(sk-y7xU••••••0h)。如果你测的是私有中转站不想公开,不要分享 URL。"
-                "后续会加 opt-in 的「私有报告」开关。",
+                "Who can see my detection report link /r/xxx?",
+                "Anyone who gets the link can view it (anonymous, unencrypted). Reports never contain your API key in plaintext, "
+                "only a masked form (sk-y7xU••••••0h). If you tested a private relay you don't want public, don't share the URL. "
+                "An opt-in \"private report\" toggle is planned.",
             ),
             FAQEntry(
                 "self-host",
-                "可以本地自托管 Veridrop 吗?",
-                "可以,Veridrop 完全开源。clone 仓库 → pip install -e .[web] → "
-                "uvicorn web.server:app 即可。CLI 也可以单独用:relay-detector detect "
-                "--base-url ... --api-key ... --mode full。详见 README。",
+                "Can I self-host Veridrop locally?",
+                "Yes, Veridrop is fully open source. Clone the repo → pip install -e .[web] → "
+                "run uvicorn web.server:app and you're done. The CLI also works standalone: relay-detector detect "
+                "--base-url ... --api-key ... --mode full. See the README for details.",
             ),
         ),
     ),
     FAQCategory(
         id="privacy",
-        title="隐私与安全",
+        title="Privacy & Security",
         intro=(
-            "把 API key 交给一个检测工具是有风险的事,所以 Veridrop 在数据处理上的承诺需要"
-            "可验证 — 我们的代码完全开源,你可以审计、可以自托管。"
+            "Handing an API key to a detection tool is inherently risky, so Veridrop's data-handling promises need "
+            "to be verifiable — our code is fully open source; you can audit it and self-host it."
         ),
         entries=(
             FAQEntry(
                 "key-stored",
-                "Veridrop 会记录我的 API key 吗?",
-                "不会。API key 只存在 job 内存对象里,job 跑完(成功或失败)立即清空,"
-                "不写报告 JSON、不写日志、不写磁盘。报告里 key 是脱敏形式 (sk-y7xU••••••0h),"
-                "代码开源可验证。",
+                "Does Veridrop log my API key?",
+                "No. The API key lives only in the in-memory job object and is wiped as soon as the job finishes "
+                "(success or failure) — never written to report JSON, logs, or disk. In the report the key appears only "
+                "in masked form (sk-y7xU••••••0h); the code is open source and verifiable.",
             ),
             FAQEntry(
                 "vs-cctest-privacy",
-                "跟 cctest.ai 在数据安全上有什么区别?",
-                "cctest.ai 也声称不上传 key,但代码闭源无法验证。Veridrop 完全开源,"
-                "你可以 clone 代码自己跑(git clone ... && uvicorn web.server:app),"
-                "或者审计服务端代码(GitHub 上完全公开)。",
+                "How does this differ from cctest.ai on data security?",
+                "cctest.ai also claims not to upload keys, but the code is closed-source and unverifiable. Veridrop is fully open source — "
+                "you can clone the code and run it yourself (git clone ... && uvicorn web.server:app), "
+                "or audit the server-side code (fully public on GitHub).",
             ),
             FAQEntry(
                 "upstream-cost",
-                "检测过程会调用上游产生费用吗?",
-                "会,但很少。standard 模式约 12 个真实请求,token 总消耗 3000-5000。"
-                "按 Haiku 大约 $0.012,Sonnet $0.05,Opus $0.20。"
-                "这个钱付给上游(中转站或官方),Veridrop 自身不收费。",
+                "Does the detection process incur upstream costs?",
+                "Yes, but very little. standard mode makes about 12 real requests with 3000-5000 total tokens. "
+                "That's roughly $0.012 on Haiku, $0.05 on Sonnet, $0.20 on Opus. "
+                "That money goes to the upstream (relay or official); Veridrop itself charges nothing.",
             ),
             FAQEntry(
                 "personal-info",
-                "报告里有什么个人信息?可以删除吗?",
-                "报告只包含:① 脱敏后的 base_url;② 脱敏后的 api_key;③ 检测结果。"
-                "没有个人姓名、邮箱、IP。如果需要删除特定报告,GitHub issue 联系即可。",
+                "What personal information is in a report? Can it be deleted?",
+                "Reports contain only: ① a masked base_url; ② a masked api_key; ③ detection results. "
+                "No names, emails, or IPs. If you need a specific report deleted, just open a GitHub issue.",
             ),
         ),
     ),
     FAQCategory(
         id="compare",
-        title="工具对比",
+        title="Tool Comparison",
         intro=(
-            "中转站检测领域不止 Veridrop 一家,这一组讲清楚 Veridrop 跟同类工具的差异、"
-            "以及怎么挑中转站。"
+            "Veridrop isn't the only relay-detection tool around. This set explains how Veridrop differs "
+            "from similar tools, and how to pick a relay."
         ),
         entries=(
             FAQEntry(
                 "vs-cctest",
-                "Veridrop 跟 cctest.ai 有什么区别?",
-                "cctest 只做 Claude(单协议),用「黑盒检测」对抗规避,但维度有限。"
-                "Veridrop 三协议(Claude / OpenAI / Gemini)+ 加密级 thinking signature + "
-                "跨协议自动跳转 + 预提交死模型识别 + 完全开源,且 OpenAI 上能识别"
-                "「GPT 实为 Claude」的协议适配层指纹。",
+                "How is Veridrop different from cctest.ai?",
+                "cctest only covers Claude (single protocol) and fights evasion with \"black-box detection\", but with limited dimensions. "
+                "Veridrop offers three protocols (Claude / OpenAI / Gemini) + cryptographic thinking signature + "
+                "cross-protocol auto-jump + pre-submission dead-model identification + fully open source, and on OpenAI it can identify "
+                "the adapter-layer fingerprint of \"GPT that's actually Claude\".",
             ),
             FAQEntry(
                 "vs-hvoy",
-                "Veridrop 跟 hvoy.ai 有什么区别?",
-                "hvoy 也支持三协议,但检测维度浅(主要是协议合规)。"
-                "Veridrop 在 Claude 上有加密级 thinking signature 验证(独家)、"
-                "OpenAI 上有协议转换指纹识别(usage_source 等 critical 级)、"
-                "Gemini 上适配 thinking-by-default 模型,深度更够。",
+                "How is Veridrop different from hvoy.ai?",
+                "hvoy also supports three protocols, but its detection dimensions are shallow (mainly protocol compliance). "
+                "Veridrop has cryptographic thinking-signature verification on Claude (exclusive), "
+                "protocol-conversion fingerprinting on OpenAI (usage_source and other critical-level signals), "
+                "and thinking-by-default-aware handling on Gemini — deeper across the board.",
             ),
             FAQEntry(
                 "vs-leaderboards",
-                "中转站对比榜单(aiapipk.com / 知乎评测)跟 Veridrop 是什么关系?",
-                "那些是「主观评测」或「广告导向」,Veridrop 是「客观技术检测」。"
-                "可以互补:用榜单初筛信誉好的中转站,再用 Veridrop 做技术验证。",
+                "How do relay comparison leaderboards (aiapipk.com / Zhihu reviews) relate to Veridrop?",
+                "Those are \"subjective reviews\" or \"ad-driven\"; Veridrop is \"objective technical detection\". "
+                "They complement each other: shortlist reputable relays via leaderboards, then verify them technically with Veridrop.",
             ),
             FAQEntry(
                 "how-to-pick-relay",
-                "怎么挑中转站?有什么硬性指标?",
-                "Veridrop 推荐 5 条硬指标:① thinking signature ≥ 100;"
-                "② protocol critical_issue_count = 0;③ stream / non-stream usage 一致;"
-                "④ 模型 id 字段匹配请求模型(model_consistency pass);"
-                "⑤ 多次请求 completion_tokens CV < 0.10(稳定性)。",
+                "How do I pick a relay? What are the hard criteria?",
+                "Veridrop recommends 5 hard criteria: ① thinking signature ≥ 100; "
+                "② protocol critical_issue_count = 0; ③ stream / non-stream usage consistent; "
+                "④ model id field matches the requested model (model_consistency pass); "
+                "⑤ completion_tokens CV < 0.10 across repeated requests (stability).",
             ),
         ),
     ),

@@ -34,7 +34,7 @@ def _load_questions() -> list[dict]:
 
 class KnowledgeDetector(ActiveDetector):
     name = "knowledge"
-    display_name = "知识准确度"
+    display_name = "Knowledge Accuracy"
     weight = 10.0
 
     async def run(self, client, model: str) -> DetectorResult:

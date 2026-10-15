@@ -14,7 +14,8 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 
-# Font hunt: Noto CJK first (apt: fonts-noto-cjk) so Chinese characters render.
+# Font hunt: Noto CJK first (apt: fonts-noto-cjk) as a broad-coverage fallback
+# in case non-Latin text ever needs to render.
 # DejaVu is the Latin fallback; PIL's built-in bitmap font is the last resort
 # so we never crash on a fresh box.
 _FONT_CANDIDATES_REGULAR = [
@@ -54,52 +55,52 @@ _BG = (255, 255, 255)
 _TILE_BG = (249, 250, 251)
 
 
-# Detector display labels — Chinese, same order as the result page.
+# Detector display labels — same order as the result page.
 _DETECTOR_LABELS = {
     "anthropic": [
-        ("identity", "身份一致性"),
-        ("behavioral_signature", "行为签名验证"),
-        ("thinking_signature", "思维签名验证"),
-        ("consistency", "模型一致性"),
-        ("knowledge", "知识准确度"),
-        ("pdf", "PDF 文档识别"),
-        ("structured_output", "结构化输出"),
-        ("protocol", "协议规范性"),
-        ("integrity", "响应完整性"),
-        ("token_usage", "Token 用量"),
-        ("message_id", "消息标识规范"),
+        ("identity", "Identity Consistency"),
+        ("behavioral_signature", "Behavioral Signature"),
+        ("thinking_signature", "Thinking Signature"),
+        ("consistency", "Model Consistency"),
+        ("knowledge", "Knowledge Accuracy"),
+        ("pdf", "PDF Document Recognition"),
+        ("structured_output", "Structured Output"),
+        ("protocol", "Protocol Conformance"),
+        ("integrity", "Response Integrity"),
+        ("token_usage", "Token Usage"),
+        ("message_id", "Message ID Conformance"),
     ],
     "openai": [
-        ("basic_request", "基础请求"),
-        ("model_consistency", "模型一致性"),
-        ("function_calling", "函数调用"),
-        ("structured_output", "结构化输出"),
-        ("protocol", "协议规范性"),
-        ("integrity", "流式一致性"),
-        ("token_billing", "Token 计费"),
+        ("basic_request", "Basic Request"),
+        ("model_consistency", "Model Consistency"),
+        ("function_calling", "Function Calling"),
+        ("structured_output", "Structured Output"),
+        ("protocol", "Protocol Conformance"),
+        ("integrity", "Streaming Consistency"),
+        ("token_billing", "Token Billing"),
     ],
     "gemini": [
-        ("basic_request", "基础请求"),
-        ("model_info", "模型响应形状"),
-        ("function_calling", "函数调用"),
-        ("structured_output", "结构化输出"),
-        ("protocol", "协议规范性"),
-        ("integrity", "流式一致性"),
-        ("token_usage", "Token 用量"),
+        ("basic_request", "Basic Request"),
+        ("model_info", "Model Response Shape"),
+        ("function_calling", "Function Calling"),
+        ("structured_output", "Structured Output"),
+        ("protocol", "Protocol Conformance"),
+        ("integrity", "Streaming Consistency"),
+        ("token_usage", "Token Usage"),
     ],
 }
 
 
 def _status_label(status: str, score: float) -> tuple[str, tuple[int, int, int]]:
     if status == "pass":
-        return "通过", _GREEN
+        return "Passed", _GREEN
     if status == "skip":
-        return "跳过", _MUTED
+        return "Skipped", _MUTED
     if status == "error":
-        return "异常", _RED
+        return "Error", _RED
     if score >= 70:
-        return "警告", _AMBER
-    return "未通过", _RED
+        return "Warning", _AMBER
+    return "Failed", _RED
 
 
 def _verdict_color(score: float, verdict: str) -> tuple[int, int, int]:
@@ -120,14 +121,14 @@ def _verdict_caption(score: float, verdict: str, protocol: str = "anthropic") ->
     caption needs to follow verdict, not raw score thresholds.
     """
     if verdict == "passed" and score >= 95 and protocol == "anthropic":
-        return "完全一致"
+        return "Fully Consistent"
     if verdict == "passed" and score >= 85:
-        return "协议表现良好" if protocol in {"openai", "gemini"} else "优秀"
+        return "Good Protocol Performance" if protocol in {"openai", "gemini"} else "Excellent"
     if verdict == "passed":
-        return "基本通过" if protocol in {"openai", "gemini"} else "通过"
+        return "Largely Passed" if protocol in {"openai", "gemini"} else "Passed"
     if verdict == "marginal":
-        return "存在风险" if protocol in {"openai", "gemini"} else "基本合格"
-    return "未达标"
+        return "At Risk" if protocol in {"openai", "gemini"} else "Marginally OK"
+    return "Failed"
 
 
 def _draw_check(d: ImageDraw.ImageDraw, cx: int, cy: int, r: int,
@@ -251,15 +252,15 @@ def _openai_jpg_note(report: dict[str, Any]) -> str:
         details = structured.get("details") or {}
         if isinstance(details, dict) and details.get("markdown_json_seen"):
             return (
-                "结构化输出未生效: 已发送 json_schema strict=true,但返回了 Markdown 文本。"
+                "Structured output not in effect: json_schema strict=true was sent, but the response was Markdown text."
             )
-        return "结构化输出未通过: 返回内容不能按 JSON schema 解析。"
+        return "Structured output failed: the returned content could not be parsed against the JSON schema."
 
     token_billing = results.get("token_billing") or {}
     if token_billing.get("status") == "skip":
-        return "Token 计费无法判断: 接口没有返回足够完整的 Token 用量信息。"
+        return "Token billing inconclusive: the API did not return complete enough token usage information."
     if token_billing.get("status") == "fail":
-        return "Token 计费存在风险: 返回的 Token 统计有明显偏差。"
+        return "Token billing at risk: the returned token statistics show a significant deviation."
 
     protocol = results.get("protocol") or {}
     details = protocol.get("details") or {}
@@ -272,7 +273,7 @@ def _openai_jpg_note(report: dict[str, Any]) -> str:
                 "usage_source_anthropic",
                 "usage_mixed_token_fields",
             }:
-                return "协议提示: usage 字段带有非 OpenAI 适配层痕迹。"
+                return "Protocol note: the usage field carries traces of a non-OpenAI adapter layer."
     return ""
 
 
@@ -285,9 +286,9 @@ def _anthropic_jpg_note(report: dict[str, Any]) -> str:
     }
     token_usage = results.get("token_usage") or {}
     if token_usage.get("status") == "skip":
-        return "Token 用量无法判断: 接口没有返回完整 usage 字段。"
+        return "Token usage inconclusive: the API did not return a complete usage field."
     if token_usage.get("status") == "fail":
-        return "Token 用量存在风险: usage 字段缺失或统计偏差明显。"
+        return "Token usage at risk: the usage field is missing or shows a clear statistical deviation."
     return ""
 
 
@@ -300,13 +301,13 @@ def _gemini_jpg_note(report: dict[str, Any]) -> str:
     }
     structured = results.get("structured_output") or {}
     if structured.get("status") != "pass":
-        return "结构化输出未生效: 已要求 JSON,但返回内容无法按 schema 解析。"
+        return "Structured output not in effect: JSON was requested, but the returned content could not be parsed against the schema."
     token_usage = results.get("token_usage") or {}
     if token_usage.get("status") == "fail":
-        return "Token 用量存在风险: usage 字段不完整或统计不自洽。"
+        return "Token usage at risk: the usage field is incomplete or internally inconsistent."
     integrity = results.get("integrity") or {}
     if integrity.get("status") == "fail":
-        return "流式响应存在偏差: stream 与 non-stream 没有完全对齐。"
+        return "Streaming response deviation: stream and non-stream responses do not fully align."
     return ""
 
 
@@ -320,11 +321,11 @@ def render_report_jpg(report: dict[str, Any]) -> bytes:
     title_font = _load_font(34, bold=True)
     protocol = str(report.get("protocol") or "anthropic")
     if protocol == "openai":
-        title = "OpenAI 中转站检测报告"
+        title = "OpenAI Relay Detection Report"
     elif protocol == "gemini":
-        title = "Gemini 中转站检测报告"
+        title = "Gemini Relay Detection Report"
     else:
-        title = "中转站检测报告"
+        title = "Relay Detection Report"
     d.text((60, 50), title, fill=_TEXT, font=title_font)
 
     # share/brand pill in top-right
@@ -384,9 +385,9 @@ def render_report_jpg(report: dict[str, Any]) -> bytes:
         base_url_disp, fill=_TEXT, font=sub_font,
     )
 
-    # 报告来源
+    # Report attribution
     attr_font = _load_font(14)
-    attr_text = "由 veridrop.org 生成"
+    attr_text = "Generated by veridrop.org"
     ab = d.textbbox((0, 0), attr_text, font=attr_font)
     aw = ab[2] - ab[0]
     d.text(
@@ -416,7 +417,7 @@ def render_report_jpg(report: dict[str, Any]) -> bytes:
         score_v = float(result.get("score", 0.0))
         status_text, status_color = _status_label(status, score_v)
         if name in {"token_billing", "token_usage"} and status == "skip":
-            status_text = "无法判断"
+            status_text = "Inconclusive"
 
         # icon
         icon_cx = rows_x + 22
@@ -482,11 +483,11 @@ def render_report_jpg(report: dict[str, Any]) -> bytes:
     usage = perf.get("usage") or {}
     ttft = perf.get("ttft_ms")
     metrics = [
-        ("首 TOKEN", f"{_format_count(ttft)}ms" if ttft is not None else "—"),
-        ("总耗时", f"{_format_count(perf.get('total_latency_ms'))}ms"),
-        ("吞吐 T/S", _format_count(_tokens_per_second(report))),
-        ("输入 TOKENS", _format_count(usage.get("input_tokens"))),
-        ("输出 TOKENS", _format_count(usage.get("output_tokens"))),
+        ("FIRST TOKEN", f"{_format_count(ttft)}ms" if ttft is not None else "—"),
+        ("TOTAL TIME", f"{_format_count(perf.get('total_latency_ms'))}ms"),
+        ("THROUGHPUT T/S", _format_count(_tokens_per_second(report))),
+        ("INPUT TOKENS", _format_count(usage.get("input_tokens"))),
+        ("OUTPUT TOKENS", _format_count(usage.get("output_tokens"))),
     ]
     tile_y = H - 150
     tile_h = 90
@@ -498,9 +499,9 @@ def render_report_jpg(report: dict[str, Any]) -> bytes:
         # Highlight pathological values: TTFT >2s or total latency >30s
         # suggests a slow / overloaded relay. Otherwise tile renders plain.
         highlight = False
-        if label == "首 TOKEN" and isinstance(ttft, int) and ttft > 2000:
+        if label == "FIRST TOKEN" and isinstance(ttft, int) and ttft > 2000:
             highlight = True
-        elif label == "总耗时" and isinstance(perf.get("total_latency_ms"), int) \
+        elif label == "TOTAL TIME" and isinstance(perf.get("total_latency_ms"), int) \
                 and perf["total_latency_ms"] > 30000:
             highlight = True
         _draw_metric_tile(d, tx, tile_y, tile_w, tile_h, label, value, highlight)
@@ -511,12 +512,12 @@ def render_report_jpg(report: dict[str, Any]) -> bytes:
     if isinstance(foot, str) and foot:
         d.text(
             (60, H - 32),
-            f"生成于 {foot[:19].replace('T', ' ')} UTC", fill=_MUTED,
+            f"Generated {foot[:19].replace('T', ' ')} UTC", fill=_MUTED,
             font=foot_font,
         )
     masked = report.get("api_key_masked", "")
     if masked:
-        rt = f"密钥 {masked}"
+        rt = f"Key {masked}"
         rb = d.textbbox((0, 0), rt, font=foot_font)
         rw = rb[2] - rb[0]
         d.text(

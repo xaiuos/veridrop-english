@@ -1,7 +1,7 @@
 """Bayesian-weighted ranking tests + pagination behavior.
 
-The headline claim of the leaderboard redesign 2026-05-05 is "测试越多
-分数越能反映真实能力, fluky single-pass relays don't beat consistent
+The headline claim of the leaderboard redesign 2026-05-05 is "the more tests run,
+the better the score reflects true capability — fluky single-pass relays don't beat consistent
 performers". These tests pin that claim down so a future refactor can't
 silently revert to flat median sort.
 """

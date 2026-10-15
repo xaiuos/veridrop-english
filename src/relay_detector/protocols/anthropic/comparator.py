@@ -136,18 +136,18 @@ def _cmp_thinking_signature(b: dict, r: dict) -> tuple[Severity, list[str]]:
     r_seen = rd.get("thinking_block_seen")
     if b_seen and not r_seen:
         findings.append(
-            "thinking 块完全没返回 — 中转站可能未启用 thinking,或后台模型不支持"
+            "no thinking block returned at all — the relay may not have thinking enabled, or the backend model does not support it"
         )
         sev = Severity.CRITICAL
 
     b_sig = int(bd.get("signature_length") or 0)
     r_sig = int(rd.get("signature_length") or 0)
     if b_sig > 0 and r_sig == 0:
-        findings.append(f"signature 缺失 (baseline 长度 {b_sig} chars)")
+        findings.append(f"signature missing (baseline length {b_sig} chars)")
         sev = Severity.CRITICAL
     elif b_sig > 0 and 0 < r_sig < b_sig * 0.3:
         findings.append(
-            f"signature 异常短: relay {r_sig} chars vs baseline {b_sig}"
+            f"signature abnormally short: relay {r_sig} chars vs baseline {b_sig}"
         )
         sev = _max_severity(sev, Severity.MAJOR)
 
@@ -163,13 +163,13 @@ def _cmp_identity(b: dict, r: dict) -> tuple[Severity, list[str]]:
     r_required = len(rd.get("required_hits") or [])
     if b_required > r_required:
         findings.append(
-            f"身份关键词命中减少: baseline {b_required}/2, relay {r_required}/2"
+            f"identity keyword hits reduced: baseline {b_required}/2, relay {r_required}/2"
         )
         sev = Severity.MAJOR
 
     competitors = rd.get("competitor_hits") or []
     if competitors:
-        findings.append(f"出现竞品关键词: {competitors}")
+        findings.append(f"competitor keywords appeared: {competitors}")
         sev = Severity.CRITICAL
 
     # Specific backend brands detected on the relay but not on baseline —
@@ -180,7 +180,7 @@ def _cmp_identity(b: dict, r: dict) -> tuple[Severity, list[str]]:
     new_brands = sorted(r_brands - b_brands)
     if new_brands:
         findings.append(
-            f"⚠ 检测到非 Anthropic 后端品牌: {', '.join(new_brands)}"
+            f"⚠ non-Anthropic backend brands detected: {', '.join(new_brands)}"
         )
         sev = Severity.CRITICAL
 
@@ -199,7 +199,7 @@ def _cmp_behavioral(b: dict, r: dict) -> tuple[Severity, list[str]]:
             if isinstance(s, dict) and not s.get("hit")
         ]
         findings.append(
-            f"行为指纹缺失 {len(failed)} 项 ({b_hits}/{bd.get('total')} → "
+            f"{len(failed)} behavioral fingerprints missing ({b_hits}/{bd.get('total')} → "
             f"{r_hits}/{rd.get('total')}): {', '.join(failed)}"
         )
         return Severity.MINOR, findings
@@ -213,7 +213,7 @@ def _cmp_consistency(b: dict, r: dict) -> tuple[Severity, list[str]]:
 
     if rd.get("model_match") is False:
         findings.append(
-            f"response.model 不匹配请求: req={rd.get('request_model')!r}, "
+            f"response.model does not match the request: req={rd.get('request_model')!r}, "
             f"resp={rd.get('response_model')!r}"
         )
         sev = Severity.CRITICAL
@@ -229,14 +229,14 @@ def _cmp_consistency(b: dict, r: dict) -> tuple[Severity, list[str]]:
         # it's noticeably worse than baseline. This way score drops always
         # come with a concrete number to look at.
         cv_label = (
-            "高度不稳定" if r_cv > 0.30
-            else "可疑波动" if r_cv > 0.10
-            else "略有波动" if r_cv > b_cv * 2 + 0.03
+            "highly unstable" if r_cv > 0.30
+            else "suspicious variance" if r_cv > 0.10
+            else "slight variance" if r_cv > b_cv * 2 + 0.03
             else None
         )
         if cv_label:
             findings.append(
-                f"输出稳定性 {cv_label}: relay CV={r_cv:.3f} vs baseline CV={b_cv:.3f}"
+                f"output stability {cv_label}: relay CV={r_cv:.3f} vs baseline CV={b_cv:.3f}"
                 + (f"; output_tokens seq baseline={b_seq} relay={r_seq}"
                    if b_seq is not None or r_seq is not None else "")
             )
@@ -264,7 +264,7 @@ def _cmp_knowledge(b: dict, r: dict) -> tuple[Severity, list[str]]:
                 f"{qid}={ans!r}" if ans else f"{qid}"
             )
         findings.append(
-            f"知识题失败 {len(failed_with_answers)} 道 "
+        f"{len(failed_with_answers)} knowledge questions failed "
             f"({b_passes}/{bd.get('total')} → {r_passes}/{rd.get('total')}): "
             + "; ".join(failed_with_answers)
         )
@@ -279,7 +279,7 @@ def _cmp_pdf(b: dict, r: dict) -> tuple[Severity, list[str]]:
     r_eval = rd.get("evaluation")
     if b_eval == "magic_found" and r_eval != "magic_found":
         findings.append(
-            f"PDF 识别失败: relay 评估={r_eval!r} (baseline=magic_found)"
+        f"PDF recognition failed: relay evaluation={r_eval!r} (baseline=magic_found)"
         )
         return Severity.CRITICAL, findings
     return Severity.OK, findings
@@ -293,7 +293,7 @@ def _cmp_structured_output(b: dict, r: dict) -> tuple[Severity, list[str]]:
     r_blocks = rd.get("content_block_types") or []
     if "tool_use" in b_blocks and "tool_use" not in r_blocks:
         findings.append(
-            f"tool_use 块缺失 — relay 仅返回 {r_blocks},"
+            f"tool_use block missing — relay returned only {r_blocks},"
             f" stop_reason={rd.get('stop_reason')!r}"
         )
         # Surface the model's actual text response so we can see *why* it
@@ -304,7 +304,7 @@ def _cmp_structured_output(b: dict, r: dict) -> tuple[Severity, list[str]]:
             excerpt = text.strip().replace("\n", " ")
             if len(excerpt) > 200:
                 excerpt = excerpt[:200] + "…"
-            findings.append(f"  模型实际回复: {excerpt!r}")
+            findings.append(f"  model's actual reply: {excerpt!r}")
         return Severity.CRITICAL, findings
 
     # tool_use block present — compare individual sub_checks for fakery
@@ -321,7 +321,7 @@ def _cmp_structured_output(b: dict, r: dict) -> tuple[Severity, list[str]]:
             failed_details.append(f"{key}={r_val!r}")
     if failed_details:
         findings.append(
-            f"tool_use 子检查失败: {', '.join(failed_details)}"
+            f"tool_use sub-check failed: {', '.join(failed_details)}"
         )
         # Wrong id prefix is a strong protocol-level forgery signal.
         sev = (
@@ -346,7 +346,7 @@ def _cmp_integrity(b: dict, r: dict) -> tuple[Severity, list[str]]:
         if b_sub.get("pass") and not r_sub.get("pass"):
             failed.append(f"{key}{_integrity_subcheck_detail(key, r_sub)}")
     if failed:
-        return Severity.MINOR, [f"integrity 子检查失败: {'; '.join(failed)}"]
+        return Severity.MINOR, [f"integrity sub-check failed: {'; '.join(failed)}"]
     return Severity.OK, []
 
 
@@ -380,7 +380,7 @@ def _cmp_protocol(b: dict, r: dict) -> tuple[Severity, list[str]]:
     if new:
         sample = ", ".join(new[:3])
         more = f" (+{len(new) - 3})" if len(new) > 3 else ""
-        return Severity.MINOR, [f"协议偏差 {len(new)} 项: {sample}{more}"]
+    return Severity.MINOR, [f"{len(new)} protocol deviations: {sample}{more}"]
     return Severity.OK, []
 
 
@@ -391,12 +391,12 @@ def _cmp_message_id(b: dict, r: dict) -> tuple[Severity, list[str]]:
     new = sorted(r_v - b_v)
     if not new:
         return Severity.OK, []
-    findings = [f"ID 前缀违规: {', '.join(new)}"]
+    findings = [f"ID prefix violation: {', '.join(new)}"]
     samples = rd.get("samples") or {}
     for v in new[:2]:
         if samples.get(v):
-            findings.append(f"  样本 ({v}): {samples[v]}")
-    # id_prefix_invalid 是核心(msg_ 前缀错),其余协议小问题。
+            findings.append(f"  sample ({v}): {samples[v]}")
+    # id_prefix_invalid is the core issue (wrong msg_ prefix); the rest are minor protocol problems.
     sev = (
         Severity.MAJOR
         if "id_prefix_invalid" in new
@@ -441,21 +441,21 @@ def _compare_one(
 
     # If only one side exists, that's already a signal.
     if b is None and r is not None:
-        findings.append("baseline 缺少该检测项")
+        findings.append("baseline is missing this detector")
         severity = Severity.MINOR
     elif r is None and b is not None:
-        findings.append("relay 报告缺少该检测项 (检测可能 skipped)")
+        findings.append("relay report is missing this detector (detection may have been skipped)")
         severity = Severity.MAJOR
     elif b is not None and r is not None:
         if r.get("status") == "skip" and b.get("status") != "skip":
             findings.append(
-                f"relay 跳过该检测项 (skip_reason="
+                f"relay skipped this detector (skip_reason="
                 f"{_details(r).get('skip_reason')!r})"
             )
             severity = Severity.MAJOR
         elif r.get("status") == "error":
             findings.append(
-                f"relay 检测出错: {(r.get('error') or '')[:120]}"
+                f"relay detection errored: {(r.get('error') or '')[:120]}"
             )
             severity = Severity.MAJOR
         else:
@@ -471,7 +471,7 @@ def _compare_one(
             severity = _max_severity(severity, Severity.MAJOR)
         elif diff < 0:
             severity = _max_severity(severity, Severity.MINOR)
-        findings.append(f"分数差距 {diff:+.0f} (无具体差异定位)")
+        findings.append(f"score gap {diff:+.0f} (no specific difference located)")
 
     return DetectorComparison(
         name=name,
@@ -566,23 +566,23 @@ def _build_summary(
 
     if not models_match(b_model, r_model):
         return (
-            f"模型不一致: baseline={b_model}, relay={r_model} — 无法可靠对比"
+            f"models do not match: baseline={b_model}, relay={r_model} — no reliable comparison possible"
         )
     if overall == Severity.OK:
-        return f"中转站行为与官方基线一致 (总分 {r_total:.1f} vs {b_total:.1f})"
-    parts = [f"总分 {r_total:.1f} vs baseline {b_total:.1f} ({diff:+.1f})"]
+        return f"relay behavior matches the official baseline (total {r_total:.1f} vs {b_total:.1f})"
+    parts = [f"total {r_total:.1f} vs baseline {b_total:.1f} ({diff:+.1f})"]
     sev_bits = []
     if crit:
-        sev_bits.append(f"{crit} 项严重 (critical)")
+        sev_bits.append(f"{crit} critical")
     if major:
-        sev_bits.append(f"{major} 项重大 (major)")
+        sev_bits.append(f"{major} major")
     if minor:
-        sev_bits.append(f"{minor} 项轻微 (minor)")
+        sev_bits.append(f"{minor} minor")
     if sev_bits:
         parts.append("; ".join(sev_bits))
 
     if overall == Severity.CRITICAL:
-        parts.append("中转站极有可能不是声称的 Claude 模型")
+        parts.append("the relay is very likely not the claimed Claude model")
     elif overall == Severity.MAJOR:
-        parts.append("中转站存在能力剥离或协议显著偏差")
+        parts.append("the relay strips capabilities or deviates significantly from the protocol")
     return " — ".join(parts)

@@ -265,7 +265,7 @@ def test_default_base_url_points_to_google_official_openai_compat():
 
 def test_tier_banner_signals_protocol_level_and_mentions_openai_compat():
     title, message = tier_banner()
-    assert title == "协议级验证"
+    assert title == "Protocol-level verification"
     assert "OpenAI" in message and "chat/completions" in message
 
 

@@ -294,7 +294,7 @@ async def test_long_context_skips_when_not_opted_in():
     client = _MockClient()
     result = await det.run(client, "gpt-4o-mini")
     assert result.status == "skip"
-    assert "可选" in result.details["skip_reason"]
+    assert "optional" in result.details["skip_reason"]
     assert client.calls == []  # didn't burn any tokens
 
 
@@ -406,7 +406,7 @@ async def test_long_context_partial_recall_passes_with_warning():
     # Truncation is NOT inferred (partial isn't truncation evidence)
     assert result.details["truncation_inferred_at_tokens"] is None
     # Summary surfaces the wobble for transparency
-    assert "中段" in result.details["summary"] or "召回" in result.details["summary"]
+    assert "mid-context" in result.details["summary"] or "recall" in result.details["summary"]
 
 
 @pytest.mark.asyncio
@@ -450,12 +450,12 @@ async def test_long_context_skips_tier_above_model_limit():
     assert tiers[0]["status"] == "pass"
     assert tiers[1]["status"] == "pass"
     assert tiers[2]["status"] == "skip"
-    assert "上限" in tiers[2]["skip_reason"]
+    assert "limit" in tiers[2]["skip_reason"]
     # Aggregate: status pass (only probed tiers count for verdict)
     assert result.status == "pass"
     assert result.score == 100.0
     # Summary mentions the skip
-    assert "更高档因模型自身" in result.details["summary"]
+    assert "higher tiers not tested" in result.details["summary"]
 
 
 @pytest.mark.asyncio

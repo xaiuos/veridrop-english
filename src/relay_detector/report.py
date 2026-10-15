@@ -22,10 +22,10 @@ _VERDICT_COLOR = {
 }
 
 _STATUS_LABEL = {
-    "pass": "[green]✓ 通过[/green]",
-    "fail": "[red]✗ 失败[/red]",
-    "skip": "[dim]— 跳过[/dim]",
-    "error": "[red]! 错误[/red]",
+    "pass": "[green]✓ pass[/green]",
+    "fail": "[red]✗ fail[/red]",
+    "skip": "[dim]— skip[/dim]",
+    "error": "[red]! error[/red]",
 }
 
 
@@ -42,29 +42,29 @@ class Report:
             f"[bold]mode[/bold]: {report.mode.value}\n"
             f"[bold]api_key[/bold]:  {report.api_key_masked}    "
             f"[bold]time[/bold]: {report.timestamp.isoformat(timespec='seconds')}\n"
-            f"\n[bold]总分:[/bold] [{color}]{report.total_score:.1f}[/{color}] "
+            f"\n[bold]Total score:[/bold] [{color}]{report.total_score:.1f}[/{color}] "
             f"([{color}]{report.summary}[/{color}])"
         )
         if report.self_reported_identity:
             snippet = report.self_reported_identity.replace("\n", " ")
             if len(snippet) > 220:
                 snippet = snippet[:220] + "…"
-            header += f"\n\n[bold]模型自报[/bold]: [dim]{snippet}[/dim]"
+            header += f"\n\n[bold]Model self-report[/bold]: [dim]{snippet}[/dim]"
         if report.tier_title or report.tier_message:
             header += (
                 f"\n\n[bold]{report.tier_title or report.tier.value}[/bold]: "
                 f"[dim]{report.tier_message}[/dim]"
             )
-        self.console.print(Panel(header, title="中转站检测报告", expand=False))
+        self.console.print(Panel(header, title="Relay Detection Report", expand=False))
 
         # Detector results
         table = Table(show_header=True, expand=False)
-        table.add_column("项", style="bold")
-        table.add_column("状态", justify="center")
-        table.add_column("分数", justify="right")
-        table.add_column("权重", justify="right")
-        table.add_column("耗时", justify="right")
-        table.add_column("备注")
+        table.add_column("Item", style="bold")
+        table.add_column("Status", justify="center")
+        table.add_column("Score", justify="right")
+        table.add_column("Weight", justify="right")
+        table.add_column("Time", justify="right")
+        table.add_column("Notes")
 
         for r in report.results:
             status_str = _STATUS_LABEL.get(r.status, r.status)
@@ -89,7 +89,7 @@ class Report:
         if usage.cache_read_input_tokens is not None:
             usage_bits.append(f"cache_read={usage.cache_read_input_tokens}")
         self.console.print(
-            "[dim]性能 · "
+            "[dim]performance · "
             f"requests={perf.request_count} "
             f"backoffs={perf.backoff_events} "
             f"latency={perf.total_latency_ms}ms "
@@ -106,14 +106,14 @@ class Report:
         if r.name == "protocol":
             issues = r.details.get("issues") or []
             if not issues:
-                return "[dim]协议合规[/dim]"
+                return "[dim]protocol compliant[/dim]"
             preview = ", ".join(issues[:2])
             more = "" if len(issues) <= 2 else f" (+{len(issues) - 2})"
             return f"[yellow]{preview}{more}[/yellow]"
         if r.name == "message_id":
             v = r.details.get("violations") or []
             if not v:
-                return "[dim]ID 规范[/dim]"
+                return "[dim]ID conformant[/dim]"
             samples = r.details.get("samples") or {}
             first = v[0]
             ex = samples.get(first)
