@@ -1,1 +1,33 @@
-test
+Install prerequisites
+sudo pacman -S --needed git python python-pip
+
+Create an isolated Python environment
+python -m venv venv
+source venv/bin/activate.fish for kitty terminal 
+python -m pip install --upgrade pip
+pip install -e ".[dev,web]"
+
+run 
+set -x VERIDROP_JOBS_DIR /tmp/veridrop-dev
+uvicorn web.server:app --host 127.0.0.1 --port 8000 --reload
+
+
+cd ~/Desktop/veridrop
+
+# Switch to your localized branch
+git switch local-english
+
+# Download upstream changes without changing your files
+git fetch origin
+
+# Review the new commits
+git log --oneline HEAD..origin/main
+
+# Integrate upstream updates
+git merge origin/main
+
+# Test the application before publishing
+# Run the project's documented tests
+
+# Publish the updated localized version
+git push personal local-english:main
