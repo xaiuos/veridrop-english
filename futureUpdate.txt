@@ -1,3 +1,4 @@
+
 Install prerequisites
 sudo pacman -S --needed git python python-pip
 
@@ -28,6 +29,126 @@ git merge origin/main
 
 # Test the application before publishing
 # Run the project's documented tests
+
+
+
+
+
+--------
+# Task: Localize New Upstream Changes to English Without Breaking Existing Localization
+
+You are working on my local English-localized fork of Veridrop.
+
+**Project directory:** `~/Desktop/veridrop`  
+**Upstream repository:** `https://github.com/canarybyte/veridrop`  
+**My localization branch:** `local-english`
+
+I have merged new upstream changes into my existing English-localized branch. Some new or modified user-facing text may now be in Chinese or another language, and some existing English translations may have been overwritten or changed.
+
+Your task is to **reconcile the new upstream changes with my existing English localization** while preserving upstream functionality and all intentional project changes.
+
+## 1. Inspect the current state before editing
+
+- Read `git status --short --branch` and inspect the latest commit history.
+- Identify the upstream changes introduced by the merge.
+- Examine the current diff and compare relevant files with their previous localized versions when possible.
+- Identify newly added user-facing strings, modified strings, untranslated text, and existing translations that were accidentally reverted.
+- Do not assume every modified file needs localization.
+- Do not reset, rebase, amend, or discard any commits or user changes.
+- Do not run destructive Git commands.
+
+If the repository history or earlier localized version is insufficient to determine whether a string is new or previously translated, inspect the relevant files and history before changing it.
+
+## 2. Localize all user-facing text into natural English
+
+Search the entire project for user-facing strings affected by the upstream update, including:
+
+- Web pages, HTML templates, page titles, headings, descriptions, navigation, menus, buttons, tooltips, placeholders, form labels, validation messages, and notifications.
+- Error messages, warnings, status messages, progress messages, empty states, and success messages.
+- CLI help text, command descriptions, option descriptions, prompts, and user-visible output.
+- Reports, result summaries, leaderboard labels, detector descriptions, FAQ content, and generated HTML or text reports.
+- JavaScript-rendered content and dynamically generated strings.
+- Newly added tests or fixtures that contain expected user-facing text, updating expectations only when the corresponding intended wording changes.
+- Relevant metadata, accessibility labels, and SEO text.
+
+Translate Chinese or other non-English user-facing content into clear, idiomatic English. Preserve existing good English translations unless the new functionality requires a meaningful update.
+
+**Important:** Do not translate content that is intentionally user-configurable, user-generated, or part of an external protocol.
+
+## 3. Preserve code and API compatibility
+
+Do not translate or rename technical identifiers, including:
+
+- Python, JavaScript, and TypeScript variable names, functions, classes, modules, imports, and internal identifiers.
+- API routes, request and response fields, JSON keys, database fields, configuration keys, environment variables, and command-line option names.
+- Model IDs, provider IDs, protocol names, detector IDs, test identifiers, CSS classes, HTML IDs, filenames, and file paths.
+- External API payloads, protocol-defined values, machine-readable output, and strings that must match an upstream specification.
+
+Do not change API behavior, detector algorithms, scoring logic, model verification behavior, request handling, authentication, security checks, or other business logic merely to simplify localization.
+
+If a technical string is also displayed to users, translate only its presentation layer while keeping the underlying identifier unchanged.
+
+## 4. Preserve the existing English localization
+
+My previous localization changed many files, including files under `src/`, `tests/`, and `web/`.
+
+- Keep all valid existing English translations.
+- Do not replace the localized project with a fresh copy of upstream.
+- Do not revert unrelated fixes or features from either upstream or my local branch.
+- Do not overwrite new upstream functionality with old localized code.
+- Where upstream modified a previously localized section, combine the new functionality with the existing English presentation.
+- Where upstream introduced new functionality, localize its user-facing text consistently with the existing interface.
+- Keep terminology consistent across pages, reports, CLI output, and documentation.
+
+If a string is ambiguous, prefer a faithful translation that preserves its technical meaning rather than inventing a new feature or changing its meaning.
+
+## 5. Documentation and non-UI content
+
+Review any newly added or modified documentation that is intended for English-speaking users.
+
+Translate user-facing documentation when necessary, but do not translate source code examples, external API specifications, protocol examples, commands, configuration keys, or identifiers.
+
+Do not perform unrelated rewriting or redesign the website.
+
+## 6. Testing and verification
+
+After making the changes:
+
+1. Search for remaining non-English user-facing text in the affected files.
+2. Review the diff to ensure no unrelated upstream functionality has been removed.
+3. Run the available localization-related tests and relevant existing tests.
+4. Run the project's available linting, type checks, and build checks when dependencies and scripts permit.
+5. Check for broken template syntax, malformed HTML, JavaScript errors introduced by the changes, and incorrect links or identifiers.
+6. Verify that model IDs, API endpoints, configuration keys, and protocol payloads remain unchanged unless the upstream update explicitly changed them.
+7. If a test cannot run because a dependency or service is unavailable, report that limitation honestly. Do not claim tests passed unless they actually ran successfully.
+
+Do not install new dependencies or modify dependency versions without a clear necessity.
+
+## 7. Git safety
+
+- Do not create, switch, merge, rebase, amend, or delete branches.
+- Do not create commits or push changes.
+- Do not modify Git remotes.
+- Do not run `git reset --hard`, `git clean`, or other destructive commands.
+- Leave all work as uncommitted changes for my review.
+
+## 8. Final report
+
+When finished, provide:
+
+1. A concise summary of the upstream changes that required localization.
+2. The files changed and what was localized in each group.
+3. Any existing translations restored or updated.
+4. The tests and checks actually executed, including their results.
+5. Any remaining non-English user-facing strings that you could not confidently translate.
+6. Any merge-related problems or potential regressions discovered.
+7. Confirmation that you did not commit, push, or discard any changes.
+
+**Acceptance criteria:** The project retains its merged upstream functionality, all relevant user-facing text is in natural English, existing translations remain intact, technical identifiers and protocol behavior remain compatible, and the changes are ready for my review.
+------
+
+
+
 
 # Publish the updated localized version
 git push personal local-english:main
